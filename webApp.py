@@ -31,6 +31,7 @@ import rpcDefinitions_pb2_grpc as myRPC
 import hashlib
 import string
 import random
+import json
 
 FIBINACCI_SERVICE="localhost:50001"
 HASH_SERVICE="localhost:50001"
@@ -46,36 +47,20 @@ app = Flask(__name__)
 
 
 def GetCurrentTime():
-    return  int(round(time.time() )) # Gives you float secs since epoch
+    return int(round(time.time() )) # Gives you float secs since epoch
 
 def GetCurrUS():
-    return  int(round(time.time() *100000)) # Gives you float secs since epoch, so make it us and chop
+    return int(round(time.time() *100000)) # Gives you float secs since epoch, so make it us and chop
 
 
-def NoOp(params):
-    return str("NoOp")
-    
 
-def RandHash(size):
-    size = int(size)
-    hash = hashlib.sha256()
-    
-    dataBuffer = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(size))
-    dataBuffer = dataBuffer.encode('utf-8')
-    hash.update(dataBuffer)
-
-    return str(hash.digest())
-
-def Fib(params):
-    return str(realFib(int(params[0])))
-
-def realFib(n):
+def calculateFibinacci(n):
     if n == 0:
         return 0
     elif n == 1:
         return 1
     else:
-        return realFib(n-1) + realFib(n-2)
+        return calculateFibinacci(n-1) + calculateFibinacci(n-2)
 
 class GenericService(myRPC.SampleServiceServicer):
     def __init__(self):
@@ -87,6 +72,7 @@ class GenericService(myRPC.SampleServiceServicer):
         startTime = GetCurrUS()
 
         response = myMessages.ServiceResponse()
+        response.ServiceName = "Hash"
 
         hashStr = request.Type.lower()
         if hashStr == "sha256":
@@ -103,7 +89,18 @@ class GenericService(myRPC.SampleServiceServicer):
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             return response
 
-        response.ResponseData = RandHash(request.InputLen)
+        if request.InputLen < 1:
+            context.set_details("Hash input lenght of :  {0} not supported.".format(request.InputLen))
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            return response
+
+
+        # Create a random string of length specified to have the hash generated on
+        dataBuffer = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(request.InputLen))
+        dataBuffer = dataBuffer.encode('utf-8')
+        hash.update(dataBuffer)
+
+        response.ResponseData = str(hash.digest())
         response.ProcessingTime = GetCurrUS() - startTime
 
         return response
@@ -111,18 +108,20 @@ class GenericService(myRPC.SampleServiceServicer):
     def PerformFibinacci(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
+        response.ServiceName = "Fibinacci"
         if request.number < 0:
             context.set_details("Fibinacci requires a postive value: {0} is illegal.".format(request.Type))
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             return response
 
-        response.ResponseData = str(RealFib(request.number))
+        response.ResponseData = str(calculateFibinacci(request.number))
         response.ProcessingTime = GetCurrUS() - startTime
 
         return response
 
     def PerformNoOp(self, request, context):
         response = myMessages.ServiceResponse()
+        response.ServiceName = "NOOP"
         response.ProcessingTime = 0
         response.ResponseData = "noop"
 
@@ -131,6 +130,7 @@ class GenericService(myRPC.SampleServiceServicer):
     def PerformEtcd(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
+        response.ServiceName = "ETCd"
         response.ProcessingTime = GetCurrUS() - startTime
         response.ResponseData = "etcd"
 
@@ -166,24 +166,50 @@ def handleHashRequest(requestMap):
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.GenerateHash(request)
         logger.info(str(response))
+        return response
 
 def handleNoOpRequest(requestMap):
     logger = logging.getLogger(__name__)
     logger.info("Processing NOOP request")
+    request = myMessages.Empty()   
+
+    with grpc.insecure_channel(FIBINACCI_SERVICE) as channel:
+        rpcStub = myRPC.SampleServiceStub(channel)
+        response = rpcStub.PerformNoOp(request)
+        logger.info(str(response))
+        return response
 
 def handleFibinacciRequest(requestMap):
     logger = logging.getLogger(__name__)
     logger.info("Processing fibinacci request")
+    request = myMessages.FibanacciRequest()   
+    request.number = requestMap['size']
+
+    with grpc.insecure_channel(FIBINACCI_SERVICE) as channel:
+        rpcStub = myRPC.SampleServiceStub(channel)
+        response = rpcStub.PerformFibinacci(request)
+        logger.info(str(response))
+        return response
 
 def handleEtcdRequest(requestMap):
     logger = logging.getLogger(__name__)
     logger.info("Processing etcd request")
+    request = myMessages.EtcdRequest()   
+    request.putCount= requestMap['put']
+    request.getCount= requestMap['get']
 
+    with grpc.insecure_channel(ETCD_SERVICE) as channel:
+        rpcStub = myRPC.SampleServiceStub(channel)
+        response = rpcStub.PerformEtcd(request)
+        logger.info(str(response))
+        return response
+    
 @app.route('/postjson',methods = ['POST'])
 def postJsonHandler():
     global invalidRequests,requestsReceived,processedCount
     logger = logging.getLogger(__name__)
 
+    startTimestamp = GetCurrUS()
     requestsReceived += 1
 
     if not request.is_json:
@@ -203,31 +229,49 @@ def postJsonHandler():
     if 'start-timestamp' in content:
         requeststartTime = content['start-timestamp']
 
+    responseList=[]
     for service in content['services']:
         try:
             if service['service'].lower() == "hash":
-                handleHashRequest(service)
+                responseList.append(handleHashRequest(service))
 
             elif service['service'].lower() == "noop":
-                handleNoOpRequest(service)
+                responseList.append(handleNoOpRequest(service))
 
             elif service['service'].lower() == "fibinacci":
-                handleFibinacciRequest(service)
+                responseList.append(handleFibinacciRequest(service))
 
             elif service['service'].lower() == "etcd":
-                handleEtcdRequest(service)
+                responseList.append(handleEtcdRequest(service))
 
             else:
                 invalidRequests += 1
                 return 'Invalid JSON posted'
 
         except grpc.RpcError as ex:
+            invalidRequests += 1
+
             return "{0} --> {1}".format(status_code.name,ex.details())
 
         except Exception:
             logger.error("Service {0} unavailable".format(service['service']))
 
-    return 'JSON posted'
+    processTime = GetCurrUS() - startTimestamp 
+
+    jsonResponse=[]
+    for serviceResp in responseList:
+        response = {}
+        response['Service'] =serviceResp.ServiceName
+        response['ProcessingTime'] = serviceResp.ProcessingTime
+        response['Data'] = serviceResp.ResponseData
+        jsonResponse.append(response)
+
+
+    jsonResponse.append({'Processing Time':str(processTime)})
+    respStr = json.dumps(jsonResponse)
+    return respStr
+
+    #return 'JSON posted - ' + str(processTime)
 
 
 @app.route("/statistics")
@@ -249,7 +293,6 @@ def statistics():
 def main():
     global starttime
     starttime = GetCurrentTime()
-
 
     parser = argparse.ArgumentParser(description='Patrick\'s test app ')
     parser.add_argument("-r","--role",help="app, service",type=str,required=True)

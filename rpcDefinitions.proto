@@ -32,8 +32,9 @@ service SampleService
 
 message ServiceResponse
 {
-    int32 ProcessingTime = 1;
-    string ResponseData = 2;
+    string ServiceName = 1;
+    int32 ProcessingTime = 2;
+    string ResponseData = 3;
 }
 
 message FibanacciRequest
