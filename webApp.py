@@ -20,11 +20,23 @@
 
 import argparse
 import logging
+import grpc
+from concurrent import futures
 from flask import Flask
 from flask import request
-from pprint import pprint as pprint
 import sys
 import time
+import rpcDefinitions_pb2 as myMessages
+import rpcDefinitions_pb2_grpc as myRPC
+import hashlib
+import string
+import random
+
+FIBINACCI_SERVICE="localhost:50001"
+HASH_SERVICE="localhost:50001"
+NOOP_SERVICE="localhost:50001"
+ETCD_SERVICE="localhost:50001"
+
 processedCount=0
 requestsReceived=0
 invalidRequests=0
@@ -33,24 +45,26 @@ starttime = 0
 app = Flask(__name__)
 
 
-def __GetCurrentTime():
+def GetCurrentTime():
     return  int(round(time.time() )) # Gives you float secs since epoch
+
+def GetCurrUS():
+    return  int(round(time.time() *100000)) # Gives you float secs since epoch, so make it us and chop
 
 
 def NoOp(params):
     return str("NoOp")
     
 
-def RandHash(params):
-    import hashlib,random,string
-    size = int(params[0])
+def RandHash(size):
+    size = int(size)
     hash = hashlib.sha256()
+    
     dataBuffer = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(size))
     dataBuffer = dataBuffer.encode('utf-8')
     hash.update(dataBuffer)
 
     return str(hash.digest())
-
 
 def Fib(params):
     return str(realFib(int(params[0])))
@@ -63,14 +77,90 @@ def realFib(n):
     else:
         return realFib(n-1) + realFib(n-2)
 
+class GenericService(myRPC.SampleServiceServicer):
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+        self.logger.info("Starting grp service")
 
+    def GenerateHash(self, request, context):
+        
+        startTime = GetCurrUS()
+
+        response = myMessages.ServiceResponse()
+
+        hashStr = request.Type.lower()
+        if hashStr == "sha256":
+            hash = hashlib.sha256()
+
+        elif hashStr == "sha1":
+            hash = hashlib.sha1()
+
+        elif hashStr == "md5":
+            hash = hashlib.md5()
+
+        else:
+            context.set_details("Hash type:  {0} not supported.".format(request.Type))
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            return response
+
+        response.ProcessingTime = GetCurrUS() - startTime
+        response.ResponseData = RandHash(request.InputLen)
+
+        return response
+
+    def PerformFibinacci(self, request, context):
+        startTime = GetCurrUS()
+        response = myMessages.ServiceResponse()
+        response.ProcessingTime = GetCurrUS() - startTime
+        response.ResponseData = "Fibinacci"
+
+        return response
+
+    def PerformNoOp(self, request, context):
+        response = myMessages.ServiceResponse()
+        response.ProcessingTime = 0
+        response.ResponseData = "noop"
+
+        return response
+        
+    def PerformEtcd(self, request, context):
+        startTime = GetCurrUS()
+        response = myMessages.ServiceResponse()
+        response.ProcessingTime = GetCurrUS() - startTime
+        response.ResponseData = "etcd"
+
+        return response
+
+def runAsService():
+    logger = logging.getLogger(__name__)
+    logger.info("launching as service")
+
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    myRPC.add_SampleServiceServicer_to_server(GenericService(),server)
+    server.add_insecure_port('[::]:50001')
+    server.start()
+
+    try:
+        while True:
+            time.sleep(1000)
+    except KeyboardInterrupt:
+        server.stop(0)
+    
 def runAsApp():
     app.run()
 
 def handleHashRequest(requestMap):
     logger = logging.getLogger(__name__)
     logger.info("Processing hash request")
-    
+    request = myMessages.HashRequest()   
+    request.Type = requestMap['type']
+    request.InputLen = requestMap['length']
+
+    with grpc.insecure_channel(HASH_SERVICE) as channel:
+        rpcStub = myRPC.SampleServiceStub(channel)
+        response = rpcStub.GenerateHash(request)
+        logger.info("Response from gRPC Hash call:")
+        logger.info(str(response))
 
 def handleNoOpRequest(requestMap):
     logger = logging.getLogger(__name__)
@@ -84,11 +174,10 @@ def handleEtcdRequest(requestMap):
     logger = logging.getLogger(__name__)
     logger.info("Processing etcd request")
 
-
-
 @app.route('/postjson',methods = ['POST'])
 def postJsonHandler():
     global invalidRequests,requestsReceived,processedCount
+    logger = logging.getLogger(__name__)
 
     requestsReceived += 1
 
@@ -97,7 +186,6 @@ def postJsonHandler():
         return 'Invalid JSON posted'
 
     content = request.get_json()
-    pprint (content)
 
     if not 'start-timestamp' in content:
         invalidRequests += 1
@@ -111,22 +199,34 @@ def postJsonHandler():
         requeststartTime = content['start-timestamp']
 
     for service in content['services']:
-        if service['service'].lower() == "hash":
-            handleHashRequest(service)
+        try:
+            if service['service'].lower() == "hash":
+                handleHashRequest(service)
 
-        elif service['service'].lower() == "noop":
-            handleNoOpRequest(service)
+            elif service['service'].lower() == "noop":
+                handleNoOpRequest(service)
 
-        elif service['service'].lower() == "fibinacci":
-            handleFibinacciRequest(service)
+            elif service['service'].lower() == "fibinacci":
+                handleFibinacciRequest(service)
 
-        elif service['service'].lower() == "etcd":
-            handleEtcdRequest(service)
+            elif service['service'].lower() == "etcd":
+                handleEtcdRequest(service)
 
-        else:
-            invalidRequests += 1
-            return 'Invalid JSON posted'
+            else:
+                invalidRequests += 1
+                return 'Invalid JSON posted'
 
+        except grpc.RpcError as ex:
+            from pprint import pprint as pprint
+            #ex.details()
+            status_code = ex.code()
+            #status_code.name
+            #status_code.value
+            pprint(ex.details())
+            return "{0} --> {1}".format(status_code.name,ex.details())
+
+        except Exception:
+            logger.error("Service {0} unavailable".format(service['service']))
 
     return 'JSON posted'
 
@@ -134,7 +234,7 @@ def postJsonHandler():
 @app.route("/statistics")
 def statistics():
     global starttime,invalidRequests,requestsReceived,processedCount
-    seconds = round(__GetCurrentTime() - starttime)
+    seconds = round(GetCurrentTime() - starttime)
     strTime = ''
     for scale in 86400, 3600, 60:
         result, seconds = divmod(seconds, scale)
@@ -149,7 +249,7 @@ def statistics():
 
 def main():
     global starttime
-    starttime = __GetCurrentTime()
+    starttime = GetCurrentTime()
 
 
     parser = argparse.ArgumentParser(description='Patrick\'s test app ')
@@ -185,7 +285,8 @@ def main():
         runAsApp()
 
     else:
-        logger.info("launching as service %s",args.role)
+        runAsService()
+
     
 
  
