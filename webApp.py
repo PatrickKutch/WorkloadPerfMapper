@@ -103,16 +103,21 @@ class GenericService(myRPC.SampleServiceServicer):
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             return response
 
-        response.ProcessingTime = GetCurrUS() - startTime
         response.ResponseData = RandHash(request.InputLen)
+        response.ProcessingTime = GetCurrUS() - startTime
 
         return response
 
     def PerformFibinacci(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
+        if request.number < 0:
+            context.set_details("Fibinacci requires a postive value: {0} is illegal.".format(request.Type))
+            context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
+            return response
+
+        response.ResponseData = str(RealFib(request.number))
         response.ProcessingTime = GetCurrUS() - startTime
-        response.ResponseData = "Fibinacci"
 
         return response
 
@@ -143,6 +148,7 @@ def runAsService():
     try:
         while True:
             time.sleep(1000)
+
     except KeyboardInterrupt:
         server.stop(0)
     
@@ -159,7 +165,6 @@ def handleHashRequest(requestMap):
     with grpc.insecure_channel(HASH_SERVICE) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.GenerateHash(request)
-        logger.info("Response from gRPC Hash call:")
         logger.info(str(response))
 
 def handleNoOpRequest(requestMap):
@@ -217,12 +222,6 @@ def postJsonHandler():
                 return 'Invalid JSON posted'
 
         except grpc.RpcError as ex:
-            from pprint import pprint as pprint
-            #ex.details()
-            status_code = ex.code()
-            #status_code.name
-            #status_code.value
-            pprint(ex.details())
             return "{0} --> {1}".format(status_code.name,ex.details())
 
         except Exception:
@@ -292,10 +291,6 @@ def main():
  
 if __name__ == "__main__":
     main()
-# [ {"service":"hash", "type":"md5","length":"32"},{"service":"noop"},{"service":"fib","size":"32"} ]
-
-#{ "menu": [ { "description": "Spaghetti", "price": 7.99 }, { "description": "Steak", "price": 12.99 }, { "description": "Salad", "price": 5.99 } ], "name": "Future Studio Steak House" }
-
 {
   "start-timestamp":"323892389238923",
 
