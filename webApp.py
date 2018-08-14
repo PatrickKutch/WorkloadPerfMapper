@@ -32,6 +32,7 @@ import hashlib
 import string
 import random
 import json
+import os
 
 FIBINACCI_SERVICE="localhost:50001"
 HASH_SERVICE="localhost:50001"
@@ -59,6 +60,17 @@ def calculateFibinacci(n):
         return 1
     else:
         return calculateFibinacci(n-1) + calculateFibinacci(n-2)
+
+
+def getServiceEndpoint(serviceName):
+    if 'SERVICE_DISCOVERY_DIR' in os.environ.keys():
+        fName = os.environ['SERVICE_DISCOVERY_DIR'] + serviceName
+        with open(fName, "rt") as inpFile:
+            return inpFile.read().strip()
+
+    else:
+        return "Service Endpoint for {0} is not defined as environment variable".format(serviceName)
+
 
 class ResponseWrapper():
     def __init__(self,howLong, what):
@@ -116,7 +128,7 @@ class GenericService(myRPC.SampleServiceServicer):
     def PerformFibinacci(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
-        response.ServiceName = "Fibinacci"
+        response.ServiceName = "FIBINACCI"
 
         requestParam = response.RequestParameter.add()
         requestParam.Key = 'size'
@@ -143,7 +155,7 @@ class GenericService(myRPC.SampleServiceServicer):
     def PerformEtcd(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
-        response.ServiceName = "ETCd"
+        response.ServiceName = "ETCD"
 
         response.ProcessingTime = GetCurrUS() - startTime
         response.ResponseData = "etcd"
@@ -157,9 +169,14 @@ def runAsService(hostAddr,hostPort):
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     myRPC.add_SampleServiceServicer_to_server(GenericService(),server)
     
-    server.add_insecure_port(hostAddr +':' + str(hostPort))
-    server.start()
+    try:
+        server.add_insecure_port(hostAddr +':' + str(hostPort))
+        server.start()
+    except Exception as Ex:
+        logger.error(str(Ex))
+        return
 
+    # server returns, so let's just spin for a while
     try:
         while True:
             time.sleep(1000)
@@ -170,7 +187,10 @@ def runAsService(hostAddr,hostPort):
 def runAsApp(hostAddr,hostPort):
     logger = logging.getLogger(__name__)
     logger.info("Starting Web Service Application at {0}:{1}".format(hostAddr,hostPort))
-    app.run(host=hostAddr,port=hostPort)
+    try:
+        app.run(host=hostAddr,port=hostPort)
+    except Exception as Ex:
+        logger.error(str(Ex) + " -> {0}:{1}".format(hostAddr,hostPort))
 
 def handleHashRequest(requestMap):
     logger = logging.getLogger(__name__)
@@ -188,7 +208,7 @@ def handleHashRequest(requestMap):
     except ValueError:
         raise ValueError("Invalid Hash length specified")
 
-    with grpc.insecure_channel(HASH_SERVICE) as channel:
+    with grpc.insecure_channel(getServiceEndpoint("HASH_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.GenerateHash(request)
         logger.info(str(response))
@@ -199,7 +219,7 @@ def handleNoOpRequest(requestMap):
     logger.info("Processing NOOP request")
     request = myMessages.Empty()   
 
-    with grpc.insecure_channel(FIBINACCI_SERVICE) as channel:
+    with grpc.insecure_channel(getServiceEndpoint("NOOP_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.PerformNoOp(request)
         logger.info(str(response))
@@ -218,7 +238,7 @@ def handleFibinacciRequest(requestMap):
     except ValueError:
         raise ValueError("Invalid Fibinacci size specified")
 
-    with grpc.insecure_channel(FIBINACCI_SERVICE) as channel:
+    with grpc.insecure_channel(getServiceEndpoint("FIBINACCI_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.PerformFibinacci(request)
         logger.info(str(response))
@@ -231,7 +251,7 @@ def handleEtcdRequest(requestMap):
     request.putCount= requestMap['put']
     request.getCount= requestMap['get']
 
-    with grpc.insecure_channel(ETCD_SERVICE) as channel:
+    with grpc.insecure_channel(getServiceEndpoint("ETCD_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.PerformEtcd(request)
         logger.info(str(response))
@@ -267,16 +287,16 @@ def performServicesHandler():
         try:
             startServiceTimestamp = GetCurrUS()
 
-            if service['service'].lower() == "hash":
+            if service['service'] == "HASH":
                 response = handleHashRequest(service)
 
-            elif service['service'].lower() == "noop":
+            elif service['service'] == "NOOP":
                 response = handleNoOpRequest(service)
 
-            elif service['service'].lower() == "fibinacci":
+            elif service['service'] == "FIBINACCI":
                 response = handleFibinacciRequest(service)
 
-            elif service['service'].lower() == "etcd":
+            elif service['service'] == "ETCD":
                 response = handleEtcdRequest(service)
 
             else:

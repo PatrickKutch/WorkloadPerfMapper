@@ -150,7 +150,7 @@ def main():
                     logger.error("Malformed target: {0}".format(target))
                     return
                 paramList=target.split("{")
-                serviceName = paramList[0].strip()
+                serviceName = paramList[0].strip().upper()
                 service['service'] = serviceName
                 paramList = paramList[1].split('}')
                 if ',' in paramList[0]:
