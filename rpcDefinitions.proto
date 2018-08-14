@@ -35,6 +35,7 @@ message ServiceResponse
     string ServiceName = 1;
     int32 ProcessingTime = 2;
     string ResponseData = 3;
+    repeated Parameter RequestParameter = 4;
 }
 
 message FibanacciRequest
@@ -52,6 +53,12 @@ message EtcdRequest
 {
     int32 putCount = 1;
     int32 getCount = 2;
+}
+
+message Parameter
+{
+    string Key = 1;
+    string Value = 2;
 }
 
 message Empty
