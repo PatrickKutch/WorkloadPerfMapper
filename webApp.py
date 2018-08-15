@@ -17,7 +17,6 @@
 #    This is the main/entry point file for the Minion data collector program
 #
 ##############################################################################
-
 import argparse
 import logging
 import grpc
@@ -280,7 +279,7 @@ def performServicesHandler():
         invalidRequests += 1
         return 'Invalid JSON posted'
 
-    if not 'services' in content:
+    if not 'Services' in content:
         invalidRequests += 1
         return 'Invalid JSON posted'
 
@@ -288,20 +287,20 @@ def performServicesHandler():
         requeststartTime = content['start-timestamp']
 
     responseList=[]
-    for service in content['services']:
+    for service in content['Services']:
         try:
             startServiceTimestamp = GetCurrUS()
 
-            if service['service'] == "HASH":
+            if service['Service'] == "HASH":
                 response = handleHashRequest(service)
 
-            elif service['service'] == "NOOP":
+            elif service['Service'] == "NOOP":
                 response = handleNoOpRequest(service)
 
-            elif service['service'] == "FIBINACCI":
+            elif service['Service'] == "FIBINACCI":
                 response = handleFibinacciRequest(service)
 
-            elif service['service'] == "ETCD":
+            elif service['Service'] == "ETCD":
                 response = handleEtcdRequest(service)
 
             else:
@@ -323,12 +322,13 @@ def performServicesHandler():
             return json.dumps({"Error" : "Invalid Parameter: " + str(Ex) })
 
         except Exception as Ex:
-            logger.error("Service {0} unavailable: {1}".format(service['service'],str(Ex)))
-            return json.dumps({"Error" : "Service " + service['service'] + " unavailable"})
+            logger.error("Service {0} unavailable: {1}".format(service['Service'],str(Ex)))
+            return json.dumps({"Error" : "Service " + service['Service'] + " unavailable"})
 
     processTime = GetCurrUS() - startTimestamp 
 
-    jsonResponse=[]
+    jsonResponse={}
+    jsonResponse['Services'] = []
     for serviceResp in responseList:
         response = {}
         responseObj = serviceResp.response
@@ -336,20 +336,20 @@ def performServicesHandler():
         response['RPC Time'] = serviceResp.rpcTime
         response['Network RTT'] = int(serviceResp.rpcTime) - (responseObj.ProcessingTime)
         response['ProcessingTime'] = responseObj.ProcessingTime
-        response['Data'] = responseObj.ResponseData
+        response['Response-Data'] = responseObj.ResponseData
         response['RequestParemeters'] = []
         for Param in responseObj.RequestParameter:
             response['RequestParemeters'].append({Param.Key : Param.Value})
 
-        jsonResponse.append(response)
+        jsonResponse['Services'].append(response)
 
     overallDataMap={}
-    overallDataMap['Web-Application-Processing-Time-us'] = str(processTime)
-    overallDataMap['Web-Application-Processing-Time-ms'] = "{0:.0f}".format(processTime/1000)
+    overallDataMap['Application-Processing-Time-us'] = str(processTime)
+    overallDataMap['Application-Processing-Time-ms'] = "{0:.0f}".format(processTime/1000)
     overallDataMap['client-start-timestamp'] = requeststartTime
-    overallDataMap['services-called'] = str(len(jsonResponse))
+    overallDataMap['Services-Called'] = str(len(responseList))
 
-    jsonResponse.insert(0,overallDataMap)
+    jsonResponse['Web-App-Info'] = overallDataMap
     
     respStr = json.dumps(jsonResponse)
     return respStr

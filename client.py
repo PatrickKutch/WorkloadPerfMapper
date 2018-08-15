@@ -17,7 +17,6 @@
 #    This is the main/entry point file for the Minion data collector program
 #
 ##############################################################################
-
 import argparse
 import logging
 from concurrent import futures
@@ -33,7 +32,6 @@ ShowResponse = None
 
 def GetCurrUS():
     return int(round(time.time() *1000000)) # Gives you float secs since epoch, so make it us and chop
-
 
 def ShowResponseJSON(responseData):
     print(json.dumps(responseData,indent=4, sort_keys=True))
@@ -67,42 +65,68 @@ def PostData(where,what,detailLevel):
         logger.error(str(Ex))
         return
 
-    respData = json.loads(response.read().decode(response.info().get_param('charset') or 'utf-8'))
+    try:
+        respData = json.loads(response.read().decode(response.info().get_param('charset') or 'utf-8'))
+
+    except Exception as Ex:
+        print("Error: " + str(Ex))
 
     if 'Error' in respData:
         print("Error: " + respData['Error'])
+
     else:
-        overallDataMap = respData[0]
+        overallDataMap = respData['Web-App-Info']
         tDelta = GetCurrUS() - float(overallDataMap['client-start-timestamp']) 
+
+        clientInfo = {}
+        clientInfo["Total-Time-us"] = "{0:.0f}".format(tDelta)
+        clientInfo["Total-Time-ms"] = "{0:.0f}".format(tDelta/1000)
+        rtt = tDelta - float(overallDataMap['Application-Processing-Time-us'])
+        clientInfo["RTT-us"] = "{0:.0f}".format(rtt)
+        clientInfo["RTT-ms"] = "{0:.0f}".format(rtt/1000)
+
         # Nuke data to display, depending on desired display verbosity
         if detailLevel < 3:
-            overallDataMap.pop('client-start-timestamp',None)
-            overallDataMap.pop('services-called',None)
-            for entry in respData:
+            overallDataMap.pop('Services-Called',None)
+            for entry in respData['Services']:
                 if 'RequestParemeters' in entry:
                     entry.pop('RequestParemeters',None)
-                    entry.pop('Data',None)
+                    entry.pop('Response-Data',None)
 
         if detailLevel < 2:
-            for entry in respData:
+            for entry in respData['Services']:
                 if 'ProcessingTime' in entry:
                     entry.pop('ProcessingTime',None)
 
         if detailLevel < 1:
             overallDataMap={}
-            respData=[overallDataMap]
+            respData={}
+#            respData['web-app-info'] = overallDataMap
 
-        overallDataMap["total-time-us"] = "{0:.0f}".format(tDelta)
-        overallDataMap["total-time-ms"] = "{0:.0f}".format(tDelta/1000)
+        if detailLevel < 0:
+            return
+
+        respData["client"] = clientInfo 
+
+        overallDataMap.pop('client-start-timestamp',None)
+
 
         ShowResponse(respData)
 
+def PostRestMessage(targteServer,dataPkt,detailsLevel,repeatCount):
+    for loop in range(0,repeatCount):
+        PostData(targteServer,dataPkt,detailsLevel)
+
+
 def main():
-    parser = argparse.ArgumentParser(description='Micro-Services Simulator.')
+    parser = argparse.ArgumentParser(description='Micro-Services Simulator client.')
 
     parser.add_argument("targets", help="services to run and their parameters. Ex: hash{type=md5, length=322}, fibinacci{size=25}",nargs="*") #  hash{type=md5, length=322}, fibinacci{size=25}
     parser.add_argument("-s", "--server",help="where to connect to", type=str, required=True)
     parser.add_argument("-v", "--verbose",help="prints information, values 0-3",type=int)
+    parser.add_argument("-m", "--multithread", help="number of threads to run",type=int,default=1)
+    parser.add_argument("-c", "--count", help="number of times to send the request per thread", type=int,default=1)
+    parser.add_argument("-o", "--output", help="output format (json|text)",type=str,default='json')
 
     try:
         args = parser.parse_args()
@@ -111,8 +135,6 @@ def main():
             _DetailLevel = 0
         else:
             _VerboseLevel = args.verbose
-
-
     except:
         return
 
@@ -138,11 +160,18 @@ def main():
     global ShowResponse
     ShowResponse = ShowResponseJSON
 
-    multiThreaded = False
+    if args.multithread < 1:
+        logger.error("multithread option must be > 0")
+        return
+
+    if args.count < 1:
+        logger.error("count option must be > 0")
+        return
+
+
     targetList = []
     dataPktRaw = {}
     if len(args.targets) > 0:
-        multiThreaded = False
         for target in args.targets:
             service={}
             if '{' in target:
@@ -151,7 +180,7 @@ def main():
                     return
                 paramList=target.split("{")
                 serviceName = paramList[0].strip().upper()
-                service['service'] = serviceName
+                service['Service'] = serviceName
                 paramList = paramList[1].split('}')
                 if ',' in paramList[0]:
                     paramList=paramList[0].split(',')
@@ -171,9 +200,14 @@ def main():
         logger.error("No targets specified.")
         return
 
-    dataPktRaw['services'] = targetList
+    dataPktRaw['Services'] = targetList
 
-    PostData(args.server,dataPktRaw,_DetailLevel)
+    with futures.ThreadPoolExecutor(max_workers=10) as executor:
+        for loop in range(1,args.multithread-1):
+            retData = executor.submit(PostRestMessage,args.server,dataPktRaw,-1,args.count)
+
+        retData = executor.submit(PostRestMessage,args.server,dataPktRaw,_DetailLevel,args.count)
+
     
 
 if __name__ == "__main__":
