@@ -93,7 +93,7 @@ def PostData(where,what,detailLevel):
             respData=[overallDataMap]
 
         overallDataMap["total-time-us"] = "{0:.0f}".format(tDelta)
-        overallDataMap["total-time-ms"] = "{0:.2f}".format(tDelta/1000)
+        overallDataMap["total-time-ms"] = "{0:.0f}".format(tDelta/1000)
 
         ShowResponse(respData)
 

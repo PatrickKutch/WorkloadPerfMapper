@@ -26,7 +26,7 @@ from flask import Flask
 from flask import request
 import sys
 import time
-import rpcDefinitions_pb2 as myMessages
+import rpcDefinitions_pb2 as myMessages # Simplified usage
 import rpcDefinitions_pb2_grpc as myRPC
 import hashlib
 import string
@@ -34,16 +34,13 @@ import random
 import json
 import os
 
-FIBINACCI_SERVICE="localhost:50001"
-HASH_SERVICE="localhost:50001"
-NOOP_SERVICE="localhost:50001"
-ETCD_SERVICE="localhost:50001"
-
+# Some globals used for stats
 processedCount=0
 requestsReceived=0
 invalidRequests=0
 starttime = 0
 
+# for Flask object when this is run as the web application
 app = Flask(__name__)
 
 def GetCurrentTime():
@@ -52,7 +49,7 @@ def GetCurrentTime():
 def GetCurrUS():
     return int(round(time.time() *1000000)) # Gives you float secs since epoch, so make it us and chop
 
-
+# --------------- Begin routines for the 'Service' workers ----------------------
 def calculateFibinacci(n):
     if n == 0:
         return 0
@@ -65,11 +62,16 @@ def calculateFibinacci(n):
 def getServiceEndpoint(serviceName):
     if 'SERVICE_DISCOVERY_DIR' in os.environ.keys():
         fName = os.environ['SERVICE_DISCOVERY_DIR'] + serviceName
-        with open(fName, "rt") as inpFile:
-            return inpFile.read().strip()
+        try:
+            with open(fName, "rt") as inpFile:
+                return inpFile.read().strip()
+        except FileNotFoundError:
+            raise FileNotFoundError("Service Endpoint definition file {0} is not found".format(fName))
 
     else:
-        return "Service Endpoint for {0} is not defined as environment variable".format(serviceName)
+        logger = logging.getLogger(__name__)
+        logger.error("Environment variable SERVICE_DISCOVERY_DIR not set")
+        return "Environment variable SERVICE_DISCOVERY_DIR not set"
 
 
 class ResponseWrapper():
@@ -148,7 +150,7 @@ class GenericService(myRPC.SampleServiceServicer):
         response = myMessages.ServiceResponse()
         response.ServiceName = "NOOP"
         response.ProcessingTime = 0
-        response.ResponseData = "noop"
+        response.ResponseData = "NOOP Response Data"
 
         return response
         
@@ -183,7 +185,10 @@ def runAsService(hostAddr,hostPort):
 
     except KeyboardInterrupt:
         server.stop(0)
+
+# --------------- End routines for the 'Service' workers ----------------------
     
+# --------------- Begin routines for the 'web app' ----------------------
 def runAsApp(hostAddr,hostPort):
     logger = logging.getLogger(__name__)
     logger.info("Starting Web Service Application at {0}:{1}".format(hostAddr,hostPort))
@@ -318,7 +323,7 @@ def performServicesHandler():
             return json.dumps({"Error" : "Invalid Parameter: " + str(Ex) })
 
         except Exception as Ex:
-            logger.error("Service {0} unavailable".format(service['service']))
+            logger.error("Service {0} unavailable: {1}".format(service['service'],str(Ex)))
             return json.dumps({"Error" : "Service " + service['service'] + " unavailable"})
 
     processTime = GetCurrUS() - startTimestamp 
@@ -329,6 +334,7 @@ def performServicesHandler():
         responseObj = serviceResp.response
         response['Service'] =responseObj.ServiceName
         response['RPC Time'] = serviceResp.rpcTime
+        response['Network RTT'] = int(serviceResp.rpcTime) - (responseObj.ProcessingTime)
         response['ProcessingTime'] = responseObj.ProcessingTime
         response['Data'] = responseObj.ResponseData
         response['RequestParemeters'] = []
@@ -338,7 +344,8 @@ def performServicesHandler():
         jsonResponse.append(response)
 
     overallDataMap={}
-    overallDataMap['Application-Processing-Time'] = str(processTime)
+    overallDataMap['Web-Application-Processing-Time-us'] = str(processTime)
+    overallDataMap['Web-Application-Processing-Time-ms'] = "{0:.0f}".format(processTime/1000)
     overallDataMap['client-start-timestamp'] = requeststartTime
     overallDataMap['services-called'] = str(len(jsonResponse))
 
@@ -346,7 +353,6 @@ def performServicesHandler():
     
     respStr = json.dumps(jsonResponse)
     return respStr
-
 
 @app.route("/statistics")
 def statistics():
@@ -362,6 +368,9 @@ def statistics():
     strTime += '{0:02d}'.format(seconds)
 
     return "Runtime: {0} request received: {1} invalid requests: {2}".format(strTime,requestsReceived,invalidRequests)
+
+# --------------- end routines for the 'web app' ----------------------
+
 
 def main():
     global starttime
@@ -415,8 +424,11 @@ def main():
     if args.role.lower() == 'app':
         runAsApp(ip,port)
 
-    else:
+    elif args.role.lower() == 'service':
         runAsService(ip,port)
+
+    else:
+        logger.error("Unsupported Role specified: " + args.role)
 
 if __name__ == "__main__":
     main()
