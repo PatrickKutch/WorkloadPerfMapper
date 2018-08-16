@@ -17,7 +17,7 @@
 #    This is the main/entry point file for the Minion data collector program
 #
 ##############################################################################
-import argparse
+import argparse, textwrap
 import logging
 from concurrent import futures
 import sys
@@ -69,12 +69,19 @@ def PostData(where,what,detailLevel):
         respData = json.loads(response.read().decode(response.info().get_param('charset') or 'utf-8'))
 
     except Exception as Ex:
-        print("Error: " + str(Ex))
+        logger = logging.getLogger(__name__)
+        logger.error(str(Ex))
+        return
 
     if 'Error' in respData:
         print("Error: " + respData['Error'])
 
     else:
+
+        # -1 is for multi-threaded, and we only need to print/provide data for a single one
+        if detailLevel < 0:
+            return
+
         overallDataMap = respData['Web-App-Info']
         tDelta = GetCurrUS() - float(overallDataMap['client-start-timestamp']) 
 
@@ -98,18 +105,14 @@ def PostData(where,what,detailLevel):
                 if 'ProcessingTime' in entry:
                     entry.pop('ProcessingTime',None)
 
+        # if detail is =, only show client info
         if detailLevel < 1:
             overallDataMap={}
             respData={}
-#            respData['web-app-info'] = overallDataMap
-
-        if detailLevel < 0:
-            return
 
         respData["client"] = clientInfo 
 
         overallDataMap.pop('client-start-timestamp',None)
-
 
         ShowResponse(respData)
 
@@ -117,11 +120,27 @@ def PostRestMessage(targteServer,dataPkt,detailsLevel,repeatCount):
     for loop in range(0,repeatCount):
         PostData(targteServer,dataPkt,detailsLevel)
 
-
 def main():
-    parser = argparse.ArgumentParser(description='Micro-Services Simulator client.')
+    parser = argparse.ArgumentParser(description='Micro-Services Simulator client.',formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_argument("targets", help="services to run and their parameters. Ex: hash{type=md5, length=322}, fibinacci{size=25}",nargs="*") #  hash{type=md5, length=322}, fibinacci{size=25}
+    parser.add_argument("targets", nargs="*",
+                        help=textwrap.dedent('''\
+                        services to run and their parameters. 
+                        Ex: hash{type=md5, length=322} fibinacci{size=25}
+                        valid options:
+                        hash{type=hashType, length=buffSize}
+                            where 
+                                hashType = md5 | sha1 | sha256
+                                buffSize = size of random buffer to create and run has open
+                        fibinacci{size=num}
+                            where
+                                size = how high to calculate fibinacci tuple_iterator
+                        etcd{put=number,get=number}
+                            where
+                                number = number of those actions to perform with random data
+                        noop{} - does nothing but return'''))
+                                    
+
     parser.add_argument("-s", "--server",help="where to connect to", type=str, required=True)
     parser.add_argument("-v", "--verbose",help="prints information, values 0-3",type=int)
     parser.add_argument("-m", "--multithread", help="number of threads to run",type=int,default=1)
@@ -167,7 +186,6 @@ def main():
     if args.count < 1:
         logger.error("count option must be > 0")
         return
-
 
     targetList = []
     dataPktRaw = {}
