@@ -1,7 +1,7 @@
 # Use an official Python runtime as a parent image
 FROM python:3.5-slim
 
-cp ../*.py .
+COPY ../*.py .
 
 # need the goodies for flask and Google RPC
 pip grpcio-tools googleapis-common-protos flask
