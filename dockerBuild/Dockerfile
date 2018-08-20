@@ -7,5 +7,5 @@ RUN mkdir WorkloadPerfMan
 COPY *.py WorkloadPerfMan/
 WORKDIR WorkloadPerfMan
 # need the goodies for flask and Google RPC
-RUN pip instal
+RUN pip install grpcio-tools googleapis-common-protos flask
 
