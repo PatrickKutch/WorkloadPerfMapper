@@ -5,7 +5,10 @@ ENV PYTHONUNBUFFERD=0
 
 RUN mkdir WorkloadPerfMan
 COPY *.py WorkloadPerfMan/
+
 WORKDIR WorkloadPerfMan
 # need the goodies for flask and Google RPC
 RUN pip install grpcio-tools googleapis-common-protos flask
+
+ENTRYPOINT  ["python", "webApp.py"]
 
