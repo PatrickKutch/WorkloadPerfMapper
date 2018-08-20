@@ -193,8 +193,8 @@ def runAsApp(hostAddr,hostPort):
     logger.info("Starting Web Service Application at {0}:{1}".format(hostAddr,hostPort))
 
     if not 'SERVICE_DISCOVERY_DIR' in os.environ:
-        logger.warning("SERVICE_DISCOVERY_DIR environment variable not set.  Will search for config files in /var/webapp.")
-        os.environ['SERVICE_DISCOVERY_DIR'] = '/var/webapp'
+        logger.warning("SERVICE_DISCOVERY_DIR environment variable not set.  Will search for config files in /var/workloadmapper.")
+        os.environ['SERVICE_DISCOVERY_DIR'] = '/var/workloadmapper'
 
     try:
         app.run(host=hostAddr,port=hostPort)
@@ -225,7 +225,7 @@ def handleHashRequest(requestMap):
 
 def handleNoOpRequest(requestMap):
     logger = logging.getLogger(__name__)
-    logger.info("Processing NOOP request")
+    logger.info("Processing NOOP request, endpoint: " + getServiceEndpoint("NOOP_SERVICE_ENDPOINT"))
     request = myMessages.Empty()   
 
     with grpc.insecure_channel(getServiceEndpoint("NOOP_SERVICE_ENDPOINT")) as channel:
