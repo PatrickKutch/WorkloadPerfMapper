@@ -191,6 +191,11 @@ def runAsService(hostAddr,hostPort):
 def runAsApp(hostAddr,hostPort):
     logger = logging.getLogger(__name__)
     logger.info("Starting Web Service Application at {0}:{1}".format(hostAddr,hostPort))
+
+    if not 'SERVICE_DISCOVERY_DIR' in os.environ:
+        logger.warning("SERVICE_DISCOVERY_DIR environment variable not set.  Will search for config files in /var/webapp.")
+        os.environ['SERVICE_DISCOVERY_DIR'] = '/var/webapp'
+
     try:
         app.run(host=hostAddr,port=hostPort)
     except Exception as Ex:
