@@ -37,7 +37,6 @@ import os
 processedCount=0
 requestsReceived=0
 invalidRequests=0
-serviceCounterMap={}
 starttime = 0
 
 VersionStr="18.08.21 Build 1"
@@ -338,13 +337,9 @@ def performServicesHandler():
     jsonResponse={}
     jsonResponse['Services'] = []
     for serviceResp in responseList:
-        if responseObj.ServiceName in serviceCounterMap:
-            serviceCounterMap[responseObj.ServiceName] += 1
-        else:
-            serviceCounterMap[responseObj.ServiceName] =1
-
         response = {}
         responseObj = serviceResp.response
+
         response['Service'] = responseObj.ServiceName
         response['RPC Time'] = serviceResp.rpcTime
         response['Network RTT'] = int(serviceResp.rpcTime) - (responseObj.ProcessingTime)
@@ -354,7 +349,7 @@ def performServicesHandler():
         for Param in responseObj.RequestParameter:
             response['RequestParemeters'].append({Param.Key : Param.Value})
 
-        response['Processed-Count'] = str(serviceCounterMap[responseObj.ServiceName])
+        response['Processed-Count'] = responseObj.CalledCounter
 
         jsonResponse['Services'].append(response)
 

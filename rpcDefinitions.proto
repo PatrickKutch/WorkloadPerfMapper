@@ -36,6 +36,7 @@ message ServiceResponse
     int32 ProcessingTime = 2;
     string ResponseData = 3;
     repeated Parameter RequestParameter = 4;
+    int32 CalledCounter = 5;
 }
 
 message FibanacciRequest

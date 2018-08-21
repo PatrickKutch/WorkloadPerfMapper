@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='rpcDefinitions.proto',
   package='inteledgecloud',
   syntax='proto3',
-  serialized_pb=_b('\n\x14rpcDefinitions.proto\x12\x0einteledgecloud\"\x89\x01\n\x0fServiceResponse\x12\x13\n\x0bServiceName\x18\x01 \x01(\t\x12\x16\n\x0eProcessingTime\x18\x02 \x01(\x05\x12\x14\n\x0cResponseData\x18\x03 \x01(\t\x12\x33\n\x10RequestParameter\x18\x04 \x03(\x0b\x32\x19.inteledgecloud.Parameter\"\"\n\x10\x46ibanacciRequest\x12\x0e\n\x06number\x18\x01 \x01(\x05\"-\n\x0bHashRequest\x12\x0c\n\x04Type\x18\x01 \x01(\t\x12\x10\n\x08InputLen\x18\x02 \x01(\x05\"1\n\x0b\x45tcdRequest\x12\x10\n\x08putCount\x18\x01 \x01(\x05\x12\x10\n\x08getCount\x18\x02 \x01(\x05\"\'\n\tParameter\x12\x0b\n\x03Key\x18\x01 \x01(\t\x12\r\n\x05Value\x18\x02 \x01(\t\"\x07\n\x05\x45mpty2\xd0\x02\n\rSampleService\x12N\n\x0cGenerateHash\x12\x1b.inteledgecloud.HashRequest\x1a\x1f.inteledgecloud.ServiceResponse\"\x00\x12W\n\x10PerformFibinacci\x12 .inteledgecloud.FibanacciRequest\x1a\x1f.inteledgecloud.ServiceResponse\"\x00\x12G\n\x0bPerformNoOp\x12\x15.inteledgecloud.Empty\x1a\x1f.inteledgecloud.ServiceResponse\"\x00\x12M\n\x0bPerformEtcd\x12\x1b.inteledgecloud.EtcdRequest\x1a\x1f.inteledgecloud.ServiceResponse\"\x00\x62\x06proto3')
+  serialized_pb=_b('\n\x14rpcDefinitions.proto\x12\x0einteledgecloud\"\xa0\x01\n\x0fServiceResponse\x12\x13\n\x0bServiceName\x18\x01 \x01(\t\x12\x16\n\x0eProcessingTime\x18\x02 \x01(\x05\x12\x14\n\x0cResponseData\x18\x03 \x01(\t\x12\x33\n\x10RequestParameter\x18\x04 \x03(\x0b\x32\x19.inteledgecloud.Parameter\x12\x15\n\rCalledCounter\x18\x05 \x01(\x05\"\"\n\x10\x46ibanacciRequest\x12\x0e\n\x06number\x18\x01 \x01(\x05\"-\n\x0bHashRequest\x12\x0c\n\x04Type\x18\x01 \x01(\t\x12\x10\n\x08InputLen\x18\x02 \x01(\x05\"1\n\x0b\x45tcdRequest\x12\x10\n\x08putCount\x18\x01 \x01(\x05\x12\x10\n\x08getCount\x18\x02 \x01(\x05\"\'\n\tParameter\x12\x0b\n\x03Key\x18\x01 \x01(\t\x12\r\n\x05Value\x18\x02 \x01(\t\"\x07\n\x05\x45mpty2\xd0\x02\n\rSampleService\x12N\n\x0cGenerateHash\x12\x1b.inteledgecloud.HashRequest\x1a\x1f.inteledgecloud.ServiceResponse\"\x00\x12W\n\x10PerformFibinacci\x12 .inteledgecloud.FibanacciRequest\x1a\x1f.inteledgecloud.ServiceResponse\"\x00\x12G\n\x0bPerformNoOp\x12\x15.inteledgecloud.Empty\x1a\x1f.inteledgecloud.ServiceResponse\"\x00\x12M\n\x0bPerformEtcd\x12\x1b.inteledgecloud.EtcdRequest\x1a\x1f.inteledgecloud.ServiceResponse\"\x00\x62\x06proto3')
 )
 
 
@@ -60,6 +60,13 @@ _SERVICERESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='CalledCounter', full_name='inteledgecloud.ServiceResponse.CalledCounter', index=4,
+      number=5, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -73,7 +80,7 @@ _SERVICERESPONSE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=41,
-  serialized_end=178,
+  serialized_end=201,
 )
 
 
@@ -103,8 +110,8 @@ _FIBANACCIREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=180,
-  serialized_end=214,
+  serialized_start=203,
+  serialized_end=237,
 )
 
 
@@ -141,8 +148,8 @@ _HASHREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=216,
-  serialized_end=261,
+  serialized_start=239,
+  serialized_end=284,
 )
 
 
@@ -179,8 +186,8 @@ _ETCDREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=263,
-  serialized_end=312,
+  serialized_start=286,
+  serialized_end=335,
 )
 
 
@@ -217,8 +224,8 @@ _PARAMETER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=314,
-  serialized_end=353,
+  serialized_start=337,
+  serialized_end=376,
 )
 
 
@@ -241,8 +248,8 @@ _EMPTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=355,
-  serialized_end=362,
+  serialized_start=378,
+  serialized_end=385,
 )
 
 _SERVICERESPONSE.fields_by_name['RequestParameter'].message_type = _PARAMETER
@@ -304,8 +311,8 @@ _SAMPLESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   options=None,
-  serialized_start=365,
-  serialized_end=701,
+  serialized_start=388,
+  serialized_end=724,
   methods=[
   _descriptor.MethodDescriptor(
     name='GenerateHash',
