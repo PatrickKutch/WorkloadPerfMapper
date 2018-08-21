@@ -39,7 +39,7 @@ requestsReceived=0
 invalidRequests=0
 starttime = 0
 
-VersionStr="18.08.21 Build 1"
+VersionStr="18.08.21 Build 2"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)
@@ -49,13 +49,6 @@ def GetCurrentTime():
 
 def GetCurrUS():
     return int(round(time.time() *1000000)) # Gives you float secs since epoch, so make it us and chop
-
-def static_vars(**kwargs):
-    def decorate(func):
-        for key in kwargs:
-            setattr(func, key, kwargs[key])
-        return func
-    return decorate
 
 # --------------- Begin routines for the 'Service' workers ----------------------
 def calculateFibinacci(n):
@@ -90,8 +83,11 @@ class ResponseWrapper():
 class GenericService(myRPC.SampleServiceServicer):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.hashCounter = 0
+        self.noopCounter = 0
+        self.etcdCounter = 0
+        self.fibinacciCounter = 0
 
-    @static_vars(callCounter=0)
     def GenerateHash(self, request, context):
         startTime = GetCurrUS()
 
@@ -132,14 +128,13 @@ class GenericService(myRPC.SampleServiceServicer):
         hash.update(dataBuffer)
 
         response.ResponseData = str(hash.digest())
-        GenerateHash.callCounter += 1
-        response.CalledCounter = PerformFibinacci.GenerateHash
+        self.hashCounter += 1
+        response.CalledCounter = self.hashCounter
 
         response.ProcessingTime = GetCurrUS() - startTime
 
         return response
 
-    @static_vars(callCounter=0)
     def PerformFibinacci(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
@@ -155,25 +150,23 @@ class GenericService(myRPC.SampleServiceServicer):
             return response
 
         response.ResponseData = str(calculateFibinacci(request.number))
-        PerformFibinacci.callCounter += 1
-        response.CalledCounter = PerformFibinacci.callCounter
+        self.fibinacciCounter += 1
+        response.CalledCounter = self.fibinacciCounter
 
         response.ProcessingTime = GetCurrUS() - startTime
 
         return response
 
-    @static_vars(callCounter=0)
     def PerformNoOp(self, request, context):
         response = myMessages.ServiceResponse()
         response.ServiceName = "NOOP"
         response.ProcessingTime = 0
         response.ResponseData = "NOOP Response Data"
-        PerformNoOp.callCounter += 1
-        response.CalledCounter = PerformNoOp.callCounter
+        self.noopCounter += 1
+        response.CalledCounter = self.noopCounter
 
         return response
         
-    @static_vars(callCounter=0)
     def PerformEtcd(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
@@ -181,8 +174,8 @@ class GenericService(myRPC.SampleServiceServicer):
 
         response.ProcessingTime = GetCurrUS() - startTime
         response.ResponseData = "etcd"
-        PerformEtcd.callCounter += 1
-        response.CalledCounter = PerformEtcd.callCounter
+        self.etcdCounter += 1
+        response.CalledCounter = self.etcdCounter
 
         return response
 
