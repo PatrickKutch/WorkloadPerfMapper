@@ -29,6 +29,7 @@ from pprint import pprint as pprint
 import time
 
 ShowResponse = None
+VersionStr="18.08.21 Build 2"
 
 def GetCurrUS():
     return int(round(time.time() *1000000)) # Gives you float secs since epoch, so make it us and chop
@@ -123,22 +124,22 @@ def PostRestMessage(targteServer,dataPkt,detailsLevel,repeatCount):
 def main():
     parser = argparse.ArgumentParser(description='Micro-Services Simulator client.',formatter_class=argparse.RawTextHelpFormatter)
 
-    parser.add_argument("targets", nargs="*",
+    parser.add_argument("targets", nargs="*", type=str,
                         help=textwrap.dedent('''\
-                        services to run and their parameters. 
-                        Ex: hash{type=md5, length=322} fibinacci{size=25}
+                        services to run and their parameters the [] are required. 
+                        Ex: hash[type=md5,length=322] fibinacci[size=25]
                         valid options:
-                        hash{type=hashType,length=buffSize}
+                        hash[type=hashType,length=buffSize]
                             where 
                                 hashType = md5 | sha1 | sha256
                                 buffSize = size of random buffer to create and run has open
-                        fibinacci{size=num}
+                        fibinacci[size=num]
                             where
                                 size = how high to calculate fibinacci tuple_iterator
-                        etcd{put=number,get=number}
+                        etcd[put=number,get=number]
                             where
                                 number = number of those actions to perform with random data
-                        noop{} - does nothing but return'''))
+                        noop[] - does nothing but return'''))
                                     
 
     parser.add_argument("-s", "--server",help="where to connect to", type=str, required=True)
@@ -149,6 +150,7 @@ def main():
     parser.add_argument("-o", "--output", help="output format (json|text)",type=str,default='json')
 
     try:
+        a = sys.argv
         args = parser.parse_args()
         if None == args.verbose:
             _VerboseLevel = 0
@@ -193,14 +195,14 @@ def main():
     if len(args.targets) > 0:
         for target in args.targets:
             service={}
-            if '{' in target:
-                if '}' not in target:
+            if '[' in target:
+                if ']' not in target:
                     logger.error("Malformed target: {0}".format(target))
                     return
-                paramList=target.split("{")
+                paramList=target.split("[")
                 serviceName = paramList[0].strip().upper()
                 service['Service'] = serviceName
-                paramList = paramList[1].split('}')
+                paramList = paramList[1].split(']')
                 if ',' in paramList[0]:
                     paramList=paramList[0].split(',')
                 
@@ -212,6 +214,9 @@ def main():
                     key = key.strip()
                     value=value.strip()
                     service[key] = value
+            else:
+                logger.error("Invalid command line parameters. Every service must have [] list")
+                return
 
             targetList.append(service)
 
@@ -226,8 +231,8 @@ def main():
             retData = executor.submit(PostRestMessage,args.server,dataPktRaw,-1,args.count)
 
         retData = executor.submit(PostRestMessage,args.server,dataPktRaw,_DetailLevel,args.count)
-
     
 
 if __name__ == "__main__":
+    print("Tester Client Applicaiton.  Version: " + VersionStr)
     main()
