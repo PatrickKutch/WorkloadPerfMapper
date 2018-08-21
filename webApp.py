@@ -37,7 +37,10 @@ import os
 processedCount=0
 requestsReceived=0
 invalidRequests=0
+serviceCounterMap={}
 starttime = 0
+
+VersionStr="18.08.21 Build 1"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)
@@ -165,7 +168,7 @@ class GenericService(myRPC.SampleServiceServicer):
 
 def runAsService(hostAddr,hostPort):
     logger = logging.getLogger(__name__)
-    logger.info("launching as service at {0}:{1}".format(hostAddr,hostPort))
+    print("Launching as service at {0}:{1}. Version: {2}".format(hostAddr,hostPort,VersionStr))
 
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     myRPC.add_SampleServiceServicer_to_server(GenericService(),server)
@@ -190,7 +193,7 @@ def runAsService(hostAddr,hostPort):
 # --------------- Begin routines for the 'web app' ----------------------
 def runAsApp(hostAddr,hostPort):
     logger = logging.getLogger(__name__)
-    logger.info("Starting Web Service Application at {0}:{1}".format(hostAddr,hostPort))
+    print("Starting Web Service Application at {0}:{1}.  Version: {2}".format(hostAddr,hostPort,VersionStr))
 
     if not 'SERVICE_DISCOVERY_DIR' in os.environ:
         logger.warning("SERVICE_DISCOVERY_DIR environment variable not set.  Will search for config files in /var/workloadmapper.")
@@ -335,9 +338,14 @@ def performServicesHandler():
     jsonResponse={}
     jsonResponse['Services'] = []
     for serviceResp in responseList:
+        if responseObj.ServiceName in serviceCounterMap:
+            serviceCounterMap[responseObj.ServiceName] += 1
+        else:
+            serviceCounterMap[responseObj.ServiceName] =1
+
         response = {}
         responseObj = serviceResp.response
-        response['Service'] =responseObj.ServiceName
+        response['Service'] = responseObj.ServiceName
         response['RPC Time'] = serviceResp.rpcTime
         response['Network RTT'] = int(serviceResp.rpcTime) - (responseObj.ProcessingTime)
         response['ProcessingTime'] = responseObj.ProcessingTime
@@ -346,9 +354,13 @@ def performServicesHandler():
         for Param in responseObj.RequestParameter:
             response['RequestParemeters'].append({Param.Key : Param.Value})
 
+        response['Processed-Count'] = str(serviceCounterMap[responseObj.ServiceName])
+
         jsonResponse['Services'].append(response)
 
+    processedCount += 1
     overallDataMap={}
+    overallDataMap['Processed-Count'] = str(processedCount)
     overallDataMap['Application-Processing-Time-us'] = str(processTime)
     overallDataMap['Application-Processing-Time-ms'] = "{0:.0f}".format(processTime/1000)
     overallDataMap['client-start-timestamp'] = requeststartTime

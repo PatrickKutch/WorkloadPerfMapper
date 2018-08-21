@@ -143,8 +143,9 @@ def main():
 
     parser.add_argument("-s", "--server",help="where to connect to", type=str, required=True)
     parser.add_argument("-v", "--verbose",help="prints information, values 0-3",type=int)
-    parser.add_argument("-m", "--multithread", help="number of threads to run",type=int,default=1)
+    parser.add_argument("-t", "--multithread", help="number of threads to run",type=int,default=1)
     parser.add_argument("-c", "--count", help="number of times to send the request per thread", type=int,default=1)
+    parser.add_argument("-m", "--mirror",help='specifies mirror target ip and port to send a copy of the incoming packets to',type=str)
     parser.add_argument("-o", "--output", help="output format (json|text)",type=str,default='json')
 
     try:
