@@ -92,7 +92,7 @@ class GenericService(myRPC.SampleServiceServicer):
         startTime = GetCurrUS()
 
         response = myMessages.ServiceResponse()
-        response.ServiceName = "Hash"
+        response.ServiceName = "HASH"
 
         requestParam = response.RequestParameter.add()
         requestParam.Key = 'type'
@@ -310,18 +310,22 @@ def performServicesHandler():
     responseList=[]
     for service in content['Services']:
         try:
+            svcName = "Malformed request - Service not found in map"
+
+            svcName = service['Service']
+
             startServiceTimestamp = GetCurrUS()
 
-            if service['Service'] == "HASH":
+            if svcName == "HASH":
                 response = handleHashRequest(service)
 
-            elif service['Service'] == "NOOP":
+            elif svcName == "NOOP":
                 response = handleNoOpRequest(service)
 
-            elif service['Service'] == "FIBINACCI":
+            elif svcName == "FIBINACCI":
                 response = handleFibinacciRequest(service)
 
-            elif service['Service'] == "ETCD":
+            elif svcName == "ETCD":
                 response = handleEtcdRequest(service)
 
             else:
@@ -343,8 +347,8 @@ def performServicesHandler():
             return json.dumps({"Error" : "Invalid Parameter: " + str(Ex) })
 
         except Exception as Ex:
-            logger.error("Service {0} unavailable: {1}".format(service['Service'],str(Ex)))
-            return json.dumps({"Error" : "Service " + service['Service'] + " unavailable"})
+            logger.error("Service {0} unavailable: {1}".format(svcName, str(Ex)))
+            return json.dumps({"Error" : "Service HASH unavailable"})
 
     processTime = GetCurrUS() - startTimestamp 
 

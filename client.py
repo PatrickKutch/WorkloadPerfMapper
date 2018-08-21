@@ -128,7 +128,7 @@ def main():
                         services to run and their parameters. 
                         Ex: hash{type=md5, length=322} fibinacci{size=25}
                         valid options:
-                        hash{type=hashType, length=buffSize}
+                        hash{type=hashType,length=buffSize}
                             where 
                                 hashType = md5 | sha1 | sha256
                                 buffSize = size of random buffer to create and run has open
