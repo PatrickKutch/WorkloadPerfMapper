@@ -50,6 +50,13 @@ def GetCurrentTime():
 def GetCurrUS():
     return int(round(time.time() *1000000)) # Gives you float secs since epoch, so make it us and chop
 
+def static_vars(**kwargs):
+    def decorate(func):
+        for key in kwargs:
+            setattr(func, key, kwargs[key])
+        return func
+    return decorate
+
 # --------------- Begin routines for the 'Service' workers ----------------------
 def calculateFibinacci(n):
     if n == 0:
@@ -84,6 +91,7 @@ class GenericService(myRPC.SampleServiceServicer):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
 
+    @static_vars(callCounter=0)
     def GenerateHash(self, request, context):
         startTime = GetCurrUS()
 
@@ -124,10 +132,14 @@ class GenericService(myRPC.SampleServiceServicer):
         hash.update(dataBuffer)
 
         response.ResponseData = str(hash.digest())
+        GenerateHash.callCounter += 1
+        response.CalledCounter = PerformFibinacci.GenerateHash
+
         response.ProcessingTime = GetCurrUS() - startTime
 
         return response
 
+    @static_vars(callCounter=0)
     def PerformFibinacci(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
@@ -143,18 +155,25 @@ class GenericService(myRPC.SampleServiceServicer):
             return response
 
         response.ResponseData = str(calculateFibinacci(request.number))
+        PerformFibinacci.callCounter += 1
+        response.CalledCounter = PerformFibinacci.callCounter
+
         response.ProcessingTime = GetCurrUS() - startTime
 
         return response
 
+    @static_vars(callCounter=0)
     def PerformNoOp(self, request, context):
         response = myMessages.ServiceResponse()
         response.ServiceName = "NOOP"
         response.ProcessingTime = 0
         response.ResponseData = "NOOP Response Data"
+        PerformNoOp.callCounter += 1
+        response.CalledCounter = PerformNoOp.callCounter
 
         return response
         
+    @static_vars(callCounter=0)
     def PerformEtcd(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
@@ -162,6 +181,8 @@ class GenericService(myRPC.SampleServiceServicer):
 
         response.ProcessingTime = GetCurrUS() - startTime
         response.ResponseData = "etcd"
+        PerformEtcd.callCounter += 1
+        response.CalledCounter = PerformEtcd.callCounter
 
         return response
 
