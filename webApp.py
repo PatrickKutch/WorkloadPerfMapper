@@ -32,6 +32,7 @@ import string
 import random
 import json
 import os
+from prometheus_client import start_http_server, Summary
 
 # Some globals used for stats
 processedCount=0
@@ -43,6 +44,9 @@ VersionStr="18.08.21 Build 2"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)
+
+# Create a metric to track time spent and requests made.
+REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
 
 def GetCurrentTime():
     return int(round(time.time() )) # Gives you float secs since epoch
@@ -58,7 +62,6 @@ def calculateFibinacci(n):
         return 1
     else:
         return calculateFibinacci(n-1) + calculateFibinacci(n-2)
-
 
 def getServiceEndpoint(serviceName):
     if 'SERVICE_DISCOVERY_DIR' in os.environ.keys():
@@ -88,6 +91,7 @@ class GenericService(myRPC.SampleServiceServicer):
         self.etcdCounter = 0
         self.fibinacciCounter = 0
 
+    @REQUEST_TIME.time()
     def GenerateHash(self, request, context):
         startTime = GetCurrUS()
 
@@ -135,6 +139,7 @@ class GenericService(myRPC.SampleServiceServicer):
 
         return response
 
+    @REQUEST_TIME.time()
     def PerformFibinacci(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
@@ -157,6 +162,7 @@ class GenericService(myRPC.SampleServiceServicer):
 
         return response
 
+    @REQUEST_TIME.time()
     def PerformNoOp(self, request, context):
         response = myMessages.ServiceResponse()
         response.ServiceName = "NOOP"
@@ -167,6 +173,7 @@ class GenericService(myRPC.SampleServiceServicer):
 
         return response
         
+    @REQUEST_TIME.time()
     def PerformEtcd(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()

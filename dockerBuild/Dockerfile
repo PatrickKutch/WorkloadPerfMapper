@@ -8,7 +8,7 @@ COPY *.py WorkloadPerfMan/
 
 WORKDIR WorkloadPerfMan
 # need the goodies for flask and Google RPC
-RUN pip install grpcio-tools googleapis-common-protos flask
+RUN pip install grpcio-tools googleapis-common-protos flask prometheus_client
 
 ENTRYPOINT  ["python", "webApp.py"]
 
