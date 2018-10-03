@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: wpm-hash-applocal-service
+  name: wpm-hash-appremote-service
 spec:
   selector:
     wpm-service: wpm-workload-mapper-app
@@ -13,7 +13,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: wpm-fibinacci-applocal-service
+  name: wpm-fibinacci-appremote-service
 spec:
   selector:
     app: workload-mapper-app
@@ -25,7 +25,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: wpm-noop-applocal-service
+  name: wpm-noop-appremote-service
 spec:
   selector:
     app: workload-mapper-app
@@ -39,10 +39,10 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: wpm-fibinacci-applocal-pod
+  name: wpm-fibinacci-appremote-pod
   labels:
     app: workload-mapper-service-fibinacci
-    locale: applocal
+    locale: appremote
 spec:
   affinity:
     nodeAffinity:
@@ -50,7 +50,7 @@ spec:
         nodeSelectorTerms:
         - matchExpressions:
           - key: placement 
-            operator: In
+            operator: NotIn
             values:
             - app-node
     
@@ -69,10 +69,10 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: wpm-hash-applocal-pod
+  name: wpm-hash-appremote-pod
   labels:
     app: workload-mapper-service-hash
-    locale: applocal
+    locale: appremote
 spec:
         
   affinity:
@@ -81,7 +81,7 @@ spec:
         nodeSelectorTerms:
         - matchExpressions:
           - key: placement 
-            operator: In
+            operator: NotIn
             values:
             - app-node
 
@@ -100,10 +100,10 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: wpm-noop-applocal-pod
+  name: wpm-noop-appremote-pod
   labels:
     app: workload-mapper-service-noop
-    locale: applocal
+    locale: appremote
 spec:
   affinity:
     nodeAffinity:
@@ -111,7 +111,7 @@ spec:
         nodeSelectorTerms:
         - matchExpressions:
           - key: placement 
-            operator: In
+            operator: NotIn
             values:
             - app-node
 
