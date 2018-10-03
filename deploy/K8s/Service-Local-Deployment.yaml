@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-performance-mapper-services-deployment
+spec:
+  selector:
+    matchLabels:
+      app: workload-mapper-services
+        replicas: 3 
+  template:
+    metadata:
+      labels:
+        app: workload-mapper-services
+    spec:
+      nodeSelector:
+        placement: app-node
+    
+      containers:
+      - name: workload-mapper-services
+        image: patrickkutch/workloadmapper
+        args: ["-r", "service", "-c", "localhost:80"]          
+        
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "0"        
+        ports:
+        - name: app-port 
+          containerPort: 80

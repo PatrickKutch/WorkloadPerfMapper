@@ -221,6 +221,7 @@ def runAsApp(hostAddr,hostPort):
 
     try:
         app.run(host=hostAddr,port=hostPort)
+        
     except Exception as Ex:
         logger.error(str(Ex) + " -> {0}:{1}".format(hostAddr,hostPort))
 
