@@ -1,23 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: workload-performance-mapper-services-deployment
+  name: workload-performance-mapper-service-HASH-deployment
 spec:
   selector:
     matchLabels:
-      app: workload-mapper-services
-      
-  replicas: 4 
+      app: workload-mapper-service-hash
   template:
     metadata:
       labels:
-        app: workload-mapper-services
+        app: workload-mapper-service-hash
     spec:
       nodeSelector:
         placement: app-node
     
       containers:
-      - name: workload-mapper-services
+      - name: workload-mapper-service-hash
         image: patrickkutch/workloadmapper
         args: ["-r", "service", "-c", "localhost:80"]          
         
@@ -27,3 +25,60 @@ spec:
         ports:
         - name: app-port 
           containerPort: 80
+
+---          
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-performance-mapper-service-FIBINACCI-deployment
+spec:
+  selector:
+    matchLabels:
+      app: workload-mapper-service-fibinacci
+  template:
+    metadata:
+      labels:
+        app: workload-mapper-service-fibinacci
+    spec:
+      nodeSelector:
+        placement: app-node
+    
+      containers:
+      - name: workload-mapper-service-fibinacci
+        image: patrickkutch/workloadmapper
+        args: ["-r", "service", "-c", "localhost:80"]          
+        
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "0"        
+        ports:
+        - name: app-port 
+          containerPort: 80
+---          
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-performance-mapper-service-NOOP-deployment
+spec:
+  selector:
+    matchLabels:
+      app: workload-mapper-service-noop
+  template:
+    metadata:
+      labels:
+        app: workload-mapper-service-noop
+    spec:
+      nodeSelector:
+        placement: app-node
+    
+      containers:
+      - name: workload-mapper-service-noop
+        image: patrickkutch/workloadmapper
+        args: ["-r", "service", "-c", "localhost:80"]          
+        
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "0"        
+        ports:
+        - name: app-port 
+          containerPort: 80          
