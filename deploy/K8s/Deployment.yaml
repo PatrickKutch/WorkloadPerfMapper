@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workload-performance-mapper-deployment
+spec:
+  selector:
+    matchLabels:
+      app: workload-mapper
+      #  replicas: 3 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: workload-mapper
+    spec:
+      containers:
+      - name: workload-mapper
+        image: patrickkutch/workload-mapper
+        imagePullPolicy: Always
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "0"        
+        ports:
+        - name: app-port 
+          containerPort: 80
+        
