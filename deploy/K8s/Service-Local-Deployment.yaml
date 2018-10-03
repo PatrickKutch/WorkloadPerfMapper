@@ -6,7 +6,8 @@ spec:
   selector:
     matchLabels:
       app: workload-mapper-services
-        replicas: 3 
+      
+  replicas: 4 
   template:
     metadata:
       labels:
