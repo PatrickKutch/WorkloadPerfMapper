@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: wpm-web-app-svc
+  name: wpm-webapp-svc
   namespace: app-at-edge-ns
 
 spec:
@@ -17,7 +17,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: wpm-web-app-pod
+  name: wpm-webapp-pod
   namespace: app-at-edge-ns   
 
 spec:
@@ -45,7 +45,7 @@ spec:
 
     envFrom:
     - configMapRef:
-        name: wpm-web-app-configmap
+        name: wpm-webapp-configmap
 
 
 
