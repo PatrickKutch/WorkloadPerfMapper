@@ -43,6 +43,9 @@ spec:
     - name: app-port 
       containerPort: 80
 
+    envFrom:
+    - configMapRef:
+        name: wpm-web-app-config-map
 
 
 
