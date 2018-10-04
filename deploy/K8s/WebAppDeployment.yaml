@@ -45,7 +45,7 @@ spec:
 
     envFrom:
     - configMapRef:
-        name: wpm-web-app-config-map
+        name: wpm-web-app-configmap
 
 
 
