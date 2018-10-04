@@ -2,6 +2,8 @@ kind: Service
 apiVersion: v1
 metadata:
   name: workload-perf-mapper-app-svc
+  namespace: appAtEdge
+
 spec:
   type: NodePort
   selector:
@@ -15,6 +17,8 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: workload-performance-mapper-app-deployment
+  namespace: appAtEdge
+  
 spec:
   selector:
     matchLabels:
