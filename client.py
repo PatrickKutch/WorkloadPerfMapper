@@ -29,7 +29,7 @@ from pprint import pprint as pprint
 import time
 
 ShowResponse = None
-VersionStr="18.08.21 Build 2"
+VersionStr="18.10.04 Build 1"
 
 def GetCurrUS():
     return int(round(time.time() *1000000)) # Gives you float secs since epoch, so make it us and chop
@@ -234,5 +234,5 @@ def main():
     
 
 if __name__ == "__main__":
-    print("Tester Client Applicaiton.  Version: " + VersionStr)
+    print("Tester Client Application.  Version: " + VersionStr)
     main()
