@@ -1,44 +1,50 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: workload-perf-mapper-app-svc
+  name: wpm-web-app-svc
   namespace: app-at-edge-ns
 
 spec:
   type: NodePort
   selector:
-    app: workload-mapper-app
+    app: wpm-web-app-pod
   ports:
   - protocol: TCP
     port: 80 
     nodePort: 32001 
 ---
-apiVersion: apps/v1
-kind: Deployment
+
+apiVersion: v1
+kind: Pod
 metadata:
-  name: workload-performance-mapper-app-deployment
-  namespace: app-at-edge-ns
-  
+  name: wpm-web-app-pod
+  namespace: app-at-edge-ns   
+
 spec:
-  selector:
-    matchLabels:
-      app: workload-mapper-app
-  template:
-    metadata:
-      labels:
-        app: workload-mapper-app
-    spec:
-      nodeSelector:
-        placement: app-node
-      containers:
-      - name: workload-mapper-app
-        image: patrickkutch/workloadmapper
-        args: ["-r", "app", "-c", "localhost:80"]          
-        
-        env:  # for logging
-        - name: PYTHONUNBUFFERED
-          value: "0"        
-        ports:
-        - name: app-port 
-          containerPort: 80
-        
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: placement 
+            operator: In
+            values:
+            - app-node
+
+  containers:
+  - name: workload-mapper-service-hash
+    image: patrickkutch/workloadmapper
+    args: ["-r", "app", "-c", "localhost:80"]          
+    
+    env:
+    - name: PYTHONUNBUFFERED
+      value: "0"        
+    ports:
+    - name: app-port 
+      containerPort: 80
+
+
+
+
+
+
