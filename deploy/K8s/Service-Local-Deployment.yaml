@@ -3,6 +3,7 @@ apiVersion: v1
 metadata:
   name: wpm-hash-applocal-service
   namespace: app-at-edge-ns
+  locale: applocal
   
 spec:
   selector:
@@ -17,6 +18,7 @@ apiVersion: v1
 metadata:
   name: wpm-fibinacci-applocal-service
   namespace: app-at-edge-ns
+  locale: applocal
   
 spec:
   selector:
@@ -31,6 +33,7 @@ apiVersion: v1
 metadata:
   name: wpm-noop-applocal-service
   namespace: app-at-edge-ns
+  locale: applocal
   
 spec:
   selector:

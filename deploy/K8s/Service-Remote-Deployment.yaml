@@ -3,6 +3,7 @@ apiVersion: v1
 metadata:
   name: wpm-hash-appremote-service
   namespace: app-at-edge-ns
+  locale: appremote
   
 spec:
   selector:
@@ -17,6 +18,7 @@ apiVersion: v1
 metadata:
   name: wpm-fibinacci-appremote-service
   namespace: app-at-edge-ns
+  locale: appremote
   
 spec:
   selector:
@@ -31,6 +33,7 @@ apiVersion: v1
 metadata:
   name: wpm-noop-appremote-service
   namespace: app-at-edge-ns
+  locale: appremote
   
 spec:
   selector:
