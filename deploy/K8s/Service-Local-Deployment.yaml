@@ -2,7 +2,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: wpm-hash-applocal-service
-  namespace: appAtEdge
+  namespace: app-at-edge-ns
   
 spec:
   selector:
@@ -16,7 +16,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: wpm-fibinacci-applocal-service
-  namespace: appAtEdge
+  namespace: app-at-edge-ns
   
 spec:
   selector:
@@ -30,7 +30,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: wpm-noop-applocal-service
-  namespace: appAtEdge
+  namespace: app-at-edge-ns
   
 spec:
   selector:
@@ -43,7 +43,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: wpm-fibinacci-applocal-pod
-  namespace: appAtEdge
+  namespace: app-at-edge-ns
   labels:
     app: workload-mapper-service-fibinacci
     locale: applocal
@@ -76,7 +76,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: wpm-hash-applocal-pod
-  namespace: appAtEdge
+  namespace: app-at-edge-ns
   labels:
     app: workload-mapper-service-hash
     locale: applocal
@@ -109,7 +109,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: wpm-noop-applocal-pod
-  namespace: appAtEdge
+  namespace: app-at-edge-ns
   labels:
     app: workload-mapper-service-noop
     locale: applocal
