@@ -7,7 +7,7 @@ metadata:
 spec:
   type: NodePort
   selector:
-    app: wpm-webapp-pod
+    wpm-pod: wpm-webapp-pod
   ports:
   - protocol: TCP
     port: 80 
@@ -19,6 +19,8 @@ kind: Pod
 metadata:
   name: wpm-webapp-pod
   namespace: app-at-edge-ns   
+  labels:
+    wpm-pod: wpm-webapp-pod
 
 spec:
   affinity:
