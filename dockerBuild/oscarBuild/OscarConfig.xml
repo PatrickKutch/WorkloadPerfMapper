@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Oscar ID="ContainerizedOscar">
+	<IncomingMinionConnection IP="0.0.0.0" PORT ="3232"/>
+	<MavinAutoConnect Key="WorkloadMapperKey"/>
+	<TargetConnection IP="nd-nuc-5.jf.intellcom" Port="6200"/>
+</Oscar>
