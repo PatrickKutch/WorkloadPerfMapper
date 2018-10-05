@@ -195,8 +195,13 @@ def runAsService(hostAddr,hostPort):
     logger = logging.getLogger(__name__)
     print("Launching as service at {0}:{1}. Version: {2}".format(hostAddr,hostPort,VersionStr))
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-    myRPC.add_SampleServiceServicer_to_server(GenericService(),server)
+    try:
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        myRPC.add_SampleServiceServicer_to_server(GenericService(),server)
+    except Exception as Ex:
+        logger.error("Error Starting server:")
+        logger.error(str(Ex))
+        return
     
     try:
         server.add_insecure_port(hostAddr +':' + str(hostPort))
