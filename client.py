@@ -43,7 +43,7 @@ def PostData(where,what,detailLevel):
         connectPoint = "http://" + where
     else:
         connectPoint = where
-
+        
     myurl = connectPoint + "/performServices"
     req = urllib.request.Request(myurl)
     req.add_header('Content-Type', 'application/json; charset=utf-8')
@@ -225,6 +225,9 @@ def main():
         return
 
     dataPktRaw['Services'] = targetList
+    
+    logger.info("Attempting to connect to {0}".format(args.server))
+    
 
     with futures.ThreadPoolExecutor(max_workers=10) as executor:
         for loop in range(1,args.multithread-1):

@@ -7,7 +7,7 @@ metadata:
 spec:
   type: NodePort
   selector:
-    app: wpm-web-app-pod
+    app: wpm-webapp-pod
   ports:
   - protocol: TCP
     port: 80 
