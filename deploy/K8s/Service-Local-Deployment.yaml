@@ -8,7 +8,7 @@ metadata:
   
 spec:
   selector:
-    wpm-service: wpm-workload-mapper-app
+    wpm-pod: wpm-app-hash
   ports:
   - protocol: TCP
     port: 80 
@@ -24,7 +24,7 @@ metadata:
   
 spec:
   selector:
-    app: workload-mapper-app
+    wpm-pod: wpm-app-fibinacci
   ports:
   - protocol: TCP
     port: 80 
@@ -40,7 +40,7 @@ metadata:
   
 spec:
   selector:
-    app: workload-mapper-app
+    wpm-pod: wpm-app-noop
   ports:
   - protocol: TCP
     port: 80 
@@ -51,7 +51,7 @@ metadata:
   name: wpm-fibinacci-applocal-pod
   namespace: app-at-edge-ns
   labels:
-    app: workload-mapper-service-fibinacci
+    wpm-pod: wpm-app-fibinacci
     locale: applocal
     
 spec:
@@ -84,7 +84,7 @@ metadata:
   name: wpm-hash-applocal-pod
   namespace: app-at-edge-ns
   labels:
-    app: workload-mapper-service-hash
+    wpm-pod: wpm-app-hash
     locale: applocal
     
 spec:
@@ -117,7 +117,7 @@ metadata:
   name: wpm-noop-applocal-pod
   namespace: app-at-edge-ns
   labels:
-    app: workload-mapper-service-noop
+    wpm-pod: wpm-app-noop
     locale: applocal
     
 spec:
