@@ -40,7 +40,7 @@ requestsReceived=0
 invalidRequests=0
 starttime = 0
 
-VersionStr="18.08.21 Build 2"
+VersionStr="18.10.05 Build 1"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)
@@ -216,8 +216,8 @@ def runAsApp(hostAddr,hostPort):
     print("Starting Web Service Application at {0}:{1}.  Version: {2}".format(hostAddr,hostPort,VersionStr))
 
     if not 'SERVICE_DISCOVERY_DIR' in os.environ:
-        logger.warning("SERVICE_DISCOVERY_DIR environment variable not set.  Will search for config files in /var/workloadmapper.")
-        os.environ['SERVICE_DISCOVERY_DIR'] = '/var/workloadmapper'
+        logger.warning("SERVICE_DISCOVERY_DIR environment variable not set.  Will search for config files in /var/workloadmapper/ .")
+        os.environ['SERVICE_DISCOVERY_DIR'] = '/var/workloadmapper/'
 
     try:
         app.run(host=hostAddr,port=hostPort)
