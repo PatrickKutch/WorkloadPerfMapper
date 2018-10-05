@@ -71,6 +71,7 @@ spec:
   containers:
   - name: workload-mapper-service-fibinacci
     image: patrickkutch/workloadmapper
+    imagePullPolicy: Always    
     args: ["-r", "service", "-c", "127.0.0.1:80"]          
     
     env:
@@ -104,6 +105,7 @@ spec:
   containers:
   - name: workload-mapper-service-hash
     image: patrickkutch/workloadmapper
+    imagePullPolicy: Always    
     args: ["-r", "service", "-c", "127.0.0.1:80"]          
     
     env:
@@ -137,6 +139,7 @@ spec:
   containers:
   - name: workload-mapper-service-noop
     image: patrickkutch/workloadmapper
+    imagePullPolicy: Always    
     args: ["-r", "service", "-c", "127.0.0.1:80"]          
     
     env:
