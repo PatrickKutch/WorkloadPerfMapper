@@ -37,7 +37,7 @@ spec:
   - name: workload-mapper-service-hash
     image: patrickkutch/workloadmapper
     imagePullPolicy: Always    
-    args: ["-v", "3","-r", "app", "-c", "127.0.0.1:80"]          
+    args: ["-v", "3","-r", "app", "-c", "0.0.0.0:80"]          
     
     env:
     - name: PYTHONUNBUFFERED

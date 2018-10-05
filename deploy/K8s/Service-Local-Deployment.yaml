@@ -72,7 +72,7 @@ spec:
   - name: workload-mapper-service-fibinacci
     image: patrickkutch/workloadmapper
     imagePullPolicy: Always    
-    args: ["-r", "service", "-c", "127.0.0.1:80"]          
+    args: ["-r", "service", "-c", "0.0.0.0:80"]          
     
     env:
     - name: PYTHONUNBUFFERED
@@ -106,7 +106,7 @@ spec:
   - name: workload-mapper-service-hash
     image: patrickkutch/workloadmapper
     imagePullPolicy: Always    
-    args: ["-r", "service", "-c", "127.0.0.1:80"]          
+    args: ["-r", "service", "-c", "0.0.0.0:80"]          
     
     env:
     - name: PYTHONUNBUFFERED
@@ -140,7 +140,7 @@ spec:
   - name: workload-mapper-service-noop
     image: patrickkutch/workloadmapper
     imagePullPolicy: Always    
-    args: ["-v","3", "-r", "service", "-c", "127.0.0.1:80"]          
+    args: ["-v","3", "-r", "service", "-c", "0.0.0.0:80"]          
     
     env:
     - name: PYTHONUNBUFFERED
