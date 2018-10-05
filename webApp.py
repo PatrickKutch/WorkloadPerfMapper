@@ -40,7 +40,7 @@ requestsReceived=0
 invalidRequests=0
 starttime = 0
 
-VersionStr="18.10.05 Build 1"
+VersionStr="18.10.05 Build 2"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)
@@ -70,7 +70,10 @@ def getServiceEndpoint(serviceName):
         logger.debug("Service: {0} is at in file {1}".format(serviceName,fName))
         try:
             with open(fName, "rt") as inpFile:
-                return inpFile.read().strip()
+                endpoint = inpFile.read().strip()
+                logger.debug("Service: {0} is at {1}".format(serviceName,endpoint))
+                return endpoint
+                
         except FileNotFoundError:
             raise FileNotFoundError("Service Endpoint definition file {0} is not found".format(fName))
 
@@ -198,7 +201,9 @@ def runAsService(hostAddr,hostPort):
     try:
         server.add_insecure_port(hostAddr +':' + str(hostPort))
         server.start()
+        logger.debug("Service Started")
     except Exception as Ex:
+        logger.error("Error Starting Service:")
         logger.error(str(Ex))
         return
 
