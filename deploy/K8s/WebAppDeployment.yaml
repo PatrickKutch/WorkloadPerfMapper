@@ -45,11 +45,14 @@ spec:
     - name: app-port 
       containerPort: 80
       
-    volumes:
-        - name: service-discovery-volume
-          configMap:
-            name: wpm-webapp-configmap
-            mountPath: /var/workloadmapper
+    volumeMounts:
+    - name: service-discovery-volume
+      mountPath: /var/workloadmapper
+      
+  volumes:
+    - name: service-discovery-volume
+      configMap:
+        name: wpm-webapp-configmap
         
 
 
