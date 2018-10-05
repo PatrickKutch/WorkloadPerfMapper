@@ -66,6 +66,8 @@ def calculateFibinacci(n):
 def getServiceEndpoint(serviceName):
     if 'SERVICE_DISCOVERY_DIR' in os.environ.keys():
         fName = os.environ['SERVICE_DISCOVERY_DIR'] + serviceName
+        logger = logging.getLogger(__name__)
+        logger.debug("Service: {0} is at in file {1}".format(serviceName,fName))
         try:
             with open(fName, "rt") as inpFile:
                 return inpFile.read().strip()
