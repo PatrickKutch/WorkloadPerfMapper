@@ -34,7 +34,7 @@ spec:
             - app-node
 
   containers:
-  - name: workload-mapper-service-hash
+  - name: wpm-webapp-pod
     image: patrickkutch/workloadmapper
     imagePullPolicy: Always    
     args: ["-v", "3","-r", "app", "-c", "0.0.0.0:80"]          

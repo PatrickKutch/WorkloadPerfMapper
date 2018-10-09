@@ -21,6 +21,7 @@ import argparse, textwrap
 import logging
 from concurrent import futures
 import sys
+import socket
 import time
 import json
 import urllib.request
@@ -29,15 +30,23 @@ from pprint import pprint as pprint
 import time
 
 ShowResponse = None
-VersionStr="18.10.04 Build 1"
+VersionStr="18.10.08 Build 1"
+args = None
 
 def GetCurrUS():
     return int(round(time.time() *1000000)) # Gives you float secs since epoch, so make it us and chop
 
 def ShowResponseJSON(responseData):
     print(json.dumps(responseData,indent=4, sort_keys=True))
+    
+def MirrorToMinion(responseData):
+    global args
+    try:
+      args.mirrorSocket.sendto(bytes(json.dumps(responseData,indent=4),'utf-8'),args.target)
+    except Exception as Ex:
+      print(str(Ex))
 
-def PostData(where,what,detailLevel):
+def PostData(where,what,detailLevel,mirrorFn):
     # is a web service, so needs a web type address
     if not 'http://' in where.lower() and not 'https://' in where.lower():
         connectPoint = "http://" + where
@@ -116,10 +125,12 @@ def PostData(where,what,detailLevel):
         overallDataMap.pop('client-start-timestamp',None)
 
         ShowResponse(respData)
+        if None != mirrorFn:
+            mirrorFn(respData)
 
-def PostRestMessage(targteServer,dataPkt,detailsLevel,repeatCount):
+def PostRestMessage(targteServer,dataPkt,detailsLevel,repeatCount,mirrorFn=None):
     for loop in range(0,repeatCount):
-        PostData(targteServer,dataPkt,detailsLevel)
+        PostData(targteServer,dataPkt,detailsLevel,mirrorFn)
 
 def main():
     parser = argparse.ArgumentParser(description='Micro-Services Simulator client.',formatter_class=argparse.RawTextHelpFormatter)
@@ -150,7 +161,7 @@ def main():
     parser.add_argument("-o", "--output", help="output format (json|text)",type=str,default='json')
 
     try:
-        a = sys.argv
+        global args
         args = parser.parse_args()
         if None == args.verbose:
             _VerboseLevel = 0
@@ -181,6 +192,15 @@ def main():
 
     global ShowResponse
     ShowResponse = ShowResponseJSON
+    
+    if None != args.mirror:
+      ip,port=args.mirror.split(":")
+      port = int(port)
+      args.target = (ip,port)
+      args.mirrorSocket = socket.socket(socket.AF_INET,  socket.SOCK_DGRAM) 
+      
+    else:
+      args.mirrorSocket = None
 
     if args.multithread < 1:
         logger.error("multithread option must be > 0")
@@ -232,8 +252,13 @@ def main():
     with futures.ThreadPoolExecutor(max_workers=10) as executor:
         for loop in range(1,args.multithread-1):
             retData = executor.submit(PostRestMessage,args.server,dataPktRaw,-1,args.count)
-
-        retData = executor.submit(PostRestMessage,args.server,dataPktRaw,_DetailLevel,args.count)
+            
+            
+        if None != args.mirrorSocket:
+             sendFn = MirrorToMinion
+        else:
+             sendFn = None
+        retData = executor.submit(PostRestMessage,args.server,dataPktRaw,_DetailLevel,args.count,sendFn)
     
 
 if __name__ == "__main__":

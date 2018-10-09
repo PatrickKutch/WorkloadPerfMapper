@@ -40,7 +40,7 @@ requestsReceived=0
 invalidRequests=0
 starttime = 0
 
-VersionStr="18.10.05 Build 2"
+VersionStr="18.10.09 Build 1"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)
@@ -373,12 +373,12 @@ def performServicesHandler():
     processTime = GetCurrUS() - startTimestamp 
 
     jsonResponse={}
-    jsonResponse['Services'] = []
+    #jsonResponse['Services'] = []
     for serviceResp in responseList:
         response = {}
         responseObj = serviceResp.response
 
-        response['Service'] = responseObj.ServiceName
+#        response['Service'] = responseObj.ServiceName
         response['RPC Time'] = serviceResp.rpcTime
         response['Network RTT'] = int(serviceResp.rpcTime) - (responseObj.ProcessingTime)
         response['ProcessingTime'] = responseObj.ProcessingTime
@@ -389,7 +389,7 @@ def performServicesHandler():
 
         response['Processed-Count'] = responseObj.CalledCounter
 
-        jsonResponse['Services'].append(response)
+        jsonResponse[responseObj.ServiceName] = response
 
     processedCount += 1
     overallDataMap={}
