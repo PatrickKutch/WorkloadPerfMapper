@@ -87,7 +87,6 @@ def PostData(where,what,detailLevel,mirrorFn):
         print("Error: " + respData['Error'])
 
     else:
-
         # -1 is for multi-threaded, and we only need to print/provide data for a single one
         if detailLevel < 0:
             return
@@ -253,11 +252,11 @@ def main():
         for loop in range(1,args.multithread-1):
             retData = executor.submit(PostRestMessage,args.server,dataPktRaw,-1,args.count)
             
-            
         if None != args.mirrorSocket:
              sendFn = MirrorToMinion
         else:
              sendFn = None
+             
         retData = executor.submit(PostRestMessage,args.server,dataPktRaw,_DetailLevel,args.count,sendFn)
     
 
