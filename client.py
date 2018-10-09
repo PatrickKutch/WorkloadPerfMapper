@@ -101,19 +101,22 @@ def PostData(where,what,detailLevel,mirrorFn):
         clientInfo["RTT-us"] = "{0:.0f}".format(rtt)
         clientInfo["RTT-ms"] = "{0:.0f}".format(rtt/1000)
 
+        
         # Nuke data to display, depending on desired display verbosity
         if detailLevel < 3:
             overallDataMap.pop('Services-Called',None)
-            for entry in respData['Services']:
-                if 'RequestParemeters' in entry:
-                    entry.pop('RequestParemeters',None)
-                    entry.pop('Response-Data',None)
+            for service in respData['Service']:
+                svcMap = respData['Service'][service]
+                if 'RequestParemeters' in svcMap:
+                    svcMap.pop('RequestParemeters',None)
+                    svcMap.pop('Response-Data',None)
 
         if detailLevel < 2:
-            for entry in respData['Services']:
-                if 'ProcessingTime' in entry:
-                    entry.pop('ProcessingTime',None)
-
+            for service in respData['Service']:
+                svcMap = respData['Service'][service]
+                if 'ProcessingTime' in svcMap:
+                    svcMap.pop('ProcessingTime',None)
+                    
         # if detail is =, only show client info
         if detailLevel < 1:
             overallDataMap={}

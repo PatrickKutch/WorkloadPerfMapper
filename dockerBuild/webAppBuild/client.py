@@ -87,7 +87,6 @@ def PostData(where,what,detailLevel,mirrorFn):
         print("Error: " + respData['Error'])
 
     else:
-
         # -1 is for multi-threaded, and we only need to print/provide data for a single one
         if detailLevel < 0:
             return
@@ -102,18 +101,27 @@ def PostData(where,what,detailLevel,mirrorFn):
         clientInfo["RTT-us"] = "{0:.0f}".format(rtt)
         clientInfo["RTT-ms"] = "{0:.0f}".format(rtt/1000)
 
+        pprint(respData)
+        for service in respData['Service']:
+           pprint(service)
+           print("----")
+        
         # Nuke data to display, depending on desired display verbosity
         if detailLevel < 3:
             overallDataMap.pop('Services-Called',None)
-            for entry in respData['Services']:
-                if 'RequestParemeters' in entry:
-                    entry.pop('RequestParemeters',None)
-                    entry.pop('Response-Data',None)
+            for entry in respData['Service']:
+#                print(entry)
+                for item in entry:
+#                   print(item)
+                   if 'RequestParemeters' in entry:
+                       entry.pop('RequestParemeters',None)
+                       entry.pop('Response-Data',None)
 
         if detailLevel < 2:
-            for entry in respData['Services']:
-                if 'ProcessingTime' in entry:
-                    entry.pop('ProcessingTime',None)
+            for entry in respData['Service']:
+                for item in entry:
+                   if 'ProcessingTime' in item:
+                       entry.pop('ProcessingTime',None)
 
         # if detail is =, only show client info
         if detailLevel < 1:
@@ -253,11 +261,11 @@ def main():
         for loop in range(1,args.multithread-1):
             retData = executor.submit(PostRestMessage,args.server,dataPktRaw,-1,args.count)
             
-            
         if None != args.mirrorSocket:
              sendFn = MirrorToMinion
         else:
              sendFn = None
+             
         retData = executor.submit(PostRestMessage,args.server,dataPktRaw,_DetailLevel,args.count,sendFn)
     
 

@@ -373,7 +373,7 @@ def performServicesHandler():
     processTime = GetCurrUS() - startTimestamp 
 
     jsonResponse={}
-    #jsonResponse['Services'] = []
+    jsonResponse['Service'] = {}
     for serviceResp in responseList:
         response = {}
         responseObj = serviceResp.response
@@ -389,7 +389,7 @@ def performServicesHandler():
 
         response['Processed-Count'] = responseObj.CalledCounter
 
-        jsonResponse[responseObj.ServiceName] = response
+        jsonResponse['Service'][responseObj.ServiceName] = response
 
     processedCount += 1
     overallDataMap={}
