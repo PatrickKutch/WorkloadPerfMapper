@@ -42,7 +42,7 @@ def ShowResponseJSON(responseData):
 def MirrorToMinion(responseData):
     global args
     try:
-      args.mirrorSocket.sendto(bytes(json.dumps(responseData),'utf-8'),args.target)
+      args.mirrorSocket.sendto(bytes(json.dumps(responseData,indent=4),'utf-8'),args.target)
     except Exception as Ex:
       print(str(Ex))
 
