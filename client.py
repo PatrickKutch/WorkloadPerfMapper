@@ -95,11 +95,11 @@ def PostData(where,what,detailLevel,mirrorFn):
         tDelta = GetCurrUS() - float(overallDataMap['client-start-timestamp']) 
 
         clientInfo = {}
-        clientInfo["Total-Time-us"] = "{0:.2f}".format(tDelta)
-        clientInfo["Total-Time-ms"] = "{0:.2f}".format(tDelta/1000)
+        clientInfo["TotalTime"] = "{0:.2f}".format(tDelta)
+        clientInfo["TotalTime.ms"] = "{0:.2f}".format(tDelta/1000)
         rtt = tDelta - float(overallDataMap['Application-Processing-Time-us'])
-        clientInfo["RTT-us"] = "{0:.2f}".format(rtt)
-        clientInfo["RTT-ms"] = "{0:.2f}".format(rtt/1000)
+        clientInfo["Time.RTT"] = "{0:.2f}".format(rtt)
+        clientInfo["Time.RTT.ms"] = "{0:.2f}".format(rtt/1000)
 
         
         # Nuke data to display, depending on desired display verbosity
@@ -109,7 +109,7 @@ def PostData(where,what,detailLevel,mirrorFn):
                 svcMap = respData['Service'][service]
                 if 'RequestParemeters' in svcMap:
                     svcMap.pop('RequestParemeters',None)
-                    svcMap.pop('Response-Data',None)
+                    svcMap.pop('ResponseData',None)
 
         if detailLevel < 2:
             for service in respData['Service']:
@@ -129,7 +129,9 @@ def PostData(where,what,detailLevel,mirrorFn):
         # Go and create a ms entry from the us data
         for service in respData['Service']:
             svcMap = respData['Service'][service]
-            a
+            respData['Service'][service]['Time.Processing.ms'] = "{0:.2f}".format(int(respData['Service'][service]['Time.Processing'])/1000)
+            respData['Service'][service]['Time.RPC.ms'] = "{0:.2f}".format(int(respData['Service'][service]['Time.RPC'])/1000)
+            respData['Service'][service]['Time.RTT.ms'] = "{0:.2f}".format(int(respData['Service'][service]['Time.RTT'])/1000)
 
         ShowResponse(respData)
         if None != mirrorFn:

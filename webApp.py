@@ -387,7 +387,7 @@ def performServicesHandler():
         for Param in responseObj.RequestParameter:
             response['RequestParemeters'].append({Param.Key : Param.Value})
 
-        response['ProcessedCCount'] = responseObj.CalledCounter
+        response['ProcessedCount'] = responseObj.CalledCounter
 
         jsonResponse['Service'][responseObj.ServiceName] = response
 
