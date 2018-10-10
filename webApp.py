@@ -379,15 +379,15 @@ def performServicesHandler():
         responseObj = serviceResp.response
 
 #        response['Service'] = responseObj.ServiceName
-        response['RPC Time'] = serviceResp.rpcTime
-        response['Network RTT'] = int(serviceResp.rpcTime) - (responseObj.ProcessingTime)
-        response['ProcessingTime'] = responseObj.ProcessingTime
-        response['Response-Data'] = responseObj.ResponseData
+        response['Time.RPC'] = serviceResp.rpcTime
+        response['Time.RTT'] = int(serviceResp.rpcTime) - (responseObj.ProcessingTime)
+        response['Time.Processing'] = responseObj.ProcessingTime
+        response['ResponseData'] = responseObj.ResponseData
         response['RequestParemeters'] = []
         for Param in responseObj.RequestParameter:
             response['RequestParemeters'].append({Param.Key : Param.Value})
 
-        response['Processed-Count'] = responseObj.CalledCounter
+        response['ProcessedCCount'] = responseObj.CalledCounter
 
         jsonResponse['Service'][responseObj.ServiceName] = response
 
@@ -395,7 +395,7 @@ def performServicesHandler():
     overallDataMap={}
     overallDataMap['Processed-Count'] = str(processedCount)
     overallDataMap['Application-Processing-Time-us'] = str(processTime)
-    overallDataMap['Application-Processing-Time-ms'] = "{0:.0f}".format(processTime/1000)
+    overallDataMap['Application-Processing-Time-ms'] = "{0:.2f}".format(processTime/1000)
     overallDataMap['client-start-timestamp'] = requeststartTime
     overallDataMap['Services-Called'] = str(len(responseList))
 

@@ -95,11 +95,11 @@ def PostData(where,what,detailLevel,mirrorFn):
         tDelta = GetCurrUS() - float(overallDataMap['client-start-timestamp']) 
 
         clientInfo = {}
-        clientInfo["Total-Time-us"] = "{0:.0f}".format(tDelta)
-        clientInfo["Total-Time-ms"] = "{0:.0f}".format(tDelta/1000)
+        clientInfo["Total-Time-us"] = "{0:.2f}".format(tDelta)
+        clientInfo["Total-Time-ms"] = "{0:.2f}".format(tDelta/1000)
         rtt = tDelta - float(overallDataMap['Application-Processing-Time-us'])
-        clientInfo["RTT-us"] = "{0:.0f}".format(rtt)
-        clientInfo["RTT-ms"] = "{0:.0f}".format(rtt/1000)
+        clientInfo["RTT-us"] = "{0:.2f}".format(rtt)
+        clientInfo["RTT-ms"] = "{0:.2f}".format(rtt/1000)
 
         
         # Nuke data to display, depending on desired display verbosity
@@ -125,6 +125,11 @@ def PostData(where,what,detailLevel,mirrorFn):
         respData["client"] = clientInfo 
 
         overallDataMap.pop('client-start-timestamp',None)
+        
+        # Go and create a ms entry from the us data
+        for service in respData['Service']:
+            svcMap = respData['Service'][service]
+            a
 
         ShowResponse(respData)
         if None != mirrorFn:
