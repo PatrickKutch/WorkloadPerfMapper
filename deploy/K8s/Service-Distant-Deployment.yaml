@@ -1,0 +1,49 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: wpm-fibinacci-appdistant-service
+  namespace: app-at-edge-ns
+  labels:
+    locale: appremote
+  
+spec:
+  selector:
+    wpm-pod: wpm-app-fibinacci
+    locale: appdistant
+  ports:
+  - protocol: TCP
+    port: 80 
+ 
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: wpm-fibinacci-appremote-pod
+  namespace: app-at-edge-ns 
+  labels:
+    wpm-pod: wpm-app-fibinacci
+    locale: appdistant
+    
+spec:
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: placement 
+            operator: In
+            values:
+            - distant-node
+    
+  containers:
+  - name: workload-mapper-service-fibinacci
+    image: patrickkutch/workloadmapper
+    imagePullPolicy: Always    
+    args: ["-r", "service", "-c", "0.0.0.0:80"]          
+    
+    env:
+    - name: PYTHONUNBUFFERED
+      value: "0"        
+    ports:
+    - name: app-port 
+      containerPort: 80

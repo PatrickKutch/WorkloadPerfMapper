@@ -67,6 +67,8 @@ spec:
             operator: NotIn
             values:
             - app-node
+              distant-node
+              
     
   containers:
   - name: workload-mapper-service-fibinacci
@@ -101,6 +103,7 @@ spec:
             operator: NotIn
             values:
             - app-node
+              distant-node
 
   containers:
   - name: workload-mapper-service-hash
@@ -135,6 +138,7 @@ spec:
             operator: NotIn
             values:
             - app-node
+              distant-node
 
   containers:
   - name: workload-mapper-service-noop
