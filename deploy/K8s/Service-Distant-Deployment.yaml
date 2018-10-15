@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: wpm-fibinacci-appdistant-service
+  name: wpm-fibinacci-servicedistant-service
   namespace: app-at-edge-ns
   labels:
     locale: appremote
@@ -18,7 +18,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: wpm-fibinacci-appdistant-pod
+  name: wpm-fibinacci-distant-pod
   namespace: app-at-edge-ns 
   labels:
     wpm-pod: wpm-app-fibinacci
