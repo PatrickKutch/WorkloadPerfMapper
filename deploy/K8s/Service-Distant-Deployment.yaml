@@ -18,7 +18,7 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: wpm-fibinacci-appremote-pod
+  name: wpm-fibinacci-appdistant-pod
   namespace: app-at-edge-ns 
   labels:
     wpm-pod: wpm-app-fibinacci
