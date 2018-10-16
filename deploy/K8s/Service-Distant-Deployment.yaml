@@ -4,7 +4,7 @@ metadata:
   name: wpm-fibinacci-servicedistant-service
   namespace: app-at-edge-ns
   labels:
-    locale: appremote
+    locale: appdistant
     wpm-label: wpm-service
   
 spec:
