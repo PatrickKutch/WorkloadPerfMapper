@@ -5,6 +5,7 @@ metadata:
   namespace: app-at-edge-ns
   labels:
     locale: applocal
+    wpm-label: wpm-service
   
 spec:
   selector:
@@ -22,6 +23,7 @@ metadata:
   namespace: app-at-edge-ns
   labels:
     locale: applocal
+    wpm-label: wpm-service
   
 spec:
   selector:
@@ -39,6 +41,7 @@ metadata:
   namespace: app-at-edge-ns
   labels:
     locale: applocal
+    wpm-label: wpm-service
   
 spec:
   selector:

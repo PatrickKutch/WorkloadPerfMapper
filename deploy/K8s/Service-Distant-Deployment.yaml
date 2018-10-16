@@ -5,11 +5,13 @@ metadata:
   namespace: app-at-edge-ns
   labels:
     locale: appremote
+    wpm-label: wpm-service
   
 spec:
   selector:
     wpm-pod: wpm-app-fibinacci
     locale: appdistant
+    
   ports:
   - protocol: TCP
     port: 80 

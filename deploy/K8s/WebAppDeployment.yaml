@@ -3,6 +3,7 @@ apiVersion: v1
 metadata:
   name: wpm-webapp-svc
   namespace: app-at-edge-ns
+  wpm-label: wpm-app
 
 spec:
   type: NodePort
