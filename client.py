@@ -63,7 +63,7 @@ def PostData(where,what,detailLevel,mirrorFn):
     req.add_header('Content-Length', len(jsondataasbytes))
 
     try:
-        response = urllib.request.urlopen(req, jsondataasbytes)
+        response = urllib.request.urlopen(req, jsondataasbytes,5)
 
     except urllib.error.URLError as Ex:
         logger = logging.getLogger(__name__)

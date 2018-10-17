@@ -62,7 +62,7 @@ def calculateFibinacci(n):
    elif None != cache[n]:
       return cache[n]        
    else:   
-      cache[n] = fib(n-1) + fib(n-2)                   
+      cache[n] = calculateFibinacci(n-1) + calculateFibinacci(n-2)                   
       return cache[n] 
 
 
@@ -93,8 +93,8 @@ class GenericService(myRPC.SampleServiceServicer):
             return response
             
         global cache
-        if while len(cache) < request.number:
-           cache.append(None)
+        while len(cache) <= request.number:
+          cache.append(None)
 
         response.ResponseData = str(calculateFibinacci(request.number))
         self.fibinacciCounter += 1
