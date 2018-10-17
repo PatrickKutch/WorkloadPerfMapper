@@ -22,6 +22,7 @@ import logging
 import grpc
 import sys
 import time
+from concurrent import futures
 import rpcDefinitions_pb2 as myMessages # Simplified usage
 import rpcDefinitions_pb2_grpc as myRPC
 import string
@@ -173,7 +174,7 @@ def main():
         logger.error("Invalid connection information: " + args.connect)
         return
         
-   runAsService(ip,port)
+    runAsService(ip,port)
 
 
 if __name__ == "__main__":
