@@ -40,6 +40,9 @@ starttime = 0
 VersionStr="18.10.15 Build 1"
 
 cache=[]
+cache.append(0)
+cache.append(1)
+
 # Create a metric to track time spent and requests made.
 REQUEST_TIME = Summary('request_processing_seconds', 'Time spent processing request')
 
@@ -88,6 +91,10 @@ class GenericService(myRPC.SampleServiceServicer):
             context.set_details("Fibinacci requires a postive value: {0} is illegal.".format(request.Type))
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             return response
+            
+        global cache
+        if while len(cache) < request.number:
+           cache.append(None)
 
         response.ResponseData = str(calculateFibinacci(request.number))
         self.fibinacciCounter += 1
