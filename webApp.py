@@ -148,14 +148,14 @@ class GenericService(myRPC.SampleServiceServicer):
     def PerformFibonacci(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
-        response.ServiceName = "FIBonacci"
+        response.ServiceName = "FIBONACCI"
 
         requestParam = response.RequestParameter.add()
         requestParam.Key = 'size'
         requestParam.Value = str(request.number)
 
         if request.number < 0:
-            context.set_details("Fibonacci requires a postive value: {0} is illegal.".format(request.Type))
+            context.set_details("Fibonacci requires a positive value: {0} is illegal.".format(request.Type))
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             return response
 
@@ -272,8 +272,8 @@ def handleNoOpRequest(requestMap):
 
 def handleFibonacciRequest(requestMap):
     logger = logging.getLogger(__name__)
-    logger.info("Processing fibonacci request")
-    request = myMessages.FibanacciRequest()   
+    logger.info("Processing Fibonacci request")
+    request = myMessages.FibonacciRequest()   
 
     if not 'size' in requestMap:
         raise ValueError("Fibonacci size not specified")
@@ -342,7 +342,7 @@ def performServicesHandler():
             elif svcName == "NOOP":
                 response = handleNoOpRequest(service)
 
-            elif svcName == "FIBonacci":
+            elif svcName == "FIBONACCI":
                 response = handleFibonacciRequest(service)
 
             elif svcName == "ETCD":

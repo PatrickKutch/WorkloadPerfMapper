@@ -25,7 +25,7 @@ package inteledgecloud;
 service SampleService
 {
     rpc GenerateHash(HashRequest) returns (ServiceResponse) {};
-    rpc PerformFibinacci(FibanacciRequest) returns (ServiceResponse) {};
+    rpc PerformFibonacci(FibanacciRequest) returns (ServiceResponse) {};
     rpc PerformNoOp(Empty) returns (ServiceResponse) {};
     rpc PerformEtcd(EtcdRequest) returns (ServiceResponse) {};
 }
@@ -39,7 +39,7 @@ message ServiceResponse
     int32 CalledCounter = 5;
 }
 
-message FibanacciRequest
+message FibonacciRequest
 {
     int32 number = 1;
 }
