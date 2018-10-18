@@ -19,7 +19,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: wpm-fibinacci-applocal-service
+  name: wpm-fibonacci-applocal-service
   namespace: app-at-edge-ns
   labels:
     locale: applocal
@@ -27,7 +27,7 @@ metadata:
   
 spec:
   selector:
-    wpm-pod: wpm-app-fibinacci
+    wpm-pod: wpm-app-fibonacci
     locale: applocal
   ports:
   - protocol: TCP
@@ -54,10 +54,10 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: wpm-fibinacci-applocal-pod
+  name: wpm-fibonacci-applocal-pod
   namespace: app-at-edge-ns
   labels:
-    wpm-pod: wpm-app-fibinacci
+    wpm-pod: wpm-app-fibonacci
     locale: applocal
     
 spec:
@@ -72,7 +72,7 @@ spec:
             - app-node
     
   containers:
-  - name: workload-mapper-service-fibinacci
+  - name: workload-mapper-service-fibonacci
     image: patrickkutch/workloadmapper
     imagePullPolicy: Always    
     args: ["-r", "service", "-c", "0.0.0.0:80"]          

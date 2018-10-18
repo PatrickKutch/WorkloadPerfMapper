@@ -147,15 +147,15 @@ def main():
     parser.add_argument("targets", nargs="*", type=str,
                         help=textwrap.dedent('''\
                         services to run and their parameters the [] are required. 
-                        Ex: hash[type=md5,length=322] fibinacci[size=25]
+                        Ex: hash[type=md5,length=322] fibonacci[size=25]
                         valid options:
                         hash[type=hashType,length=buffSize]
                             where 
                                 hashType = md5 | sha1 | sha256
                                 buffSize = size of random buffer to create and run has open
-                        fibinacci[size=num]
+                        fibonacci[size=num]
                             where
-                                size = how high to calculate fibinacci tuple_iterator
+                                size = how high to calculate fibonacci tuple_iterator
                         etcd[put=number,get=number]
                             where
                                 number = number of those actions to perform with random data

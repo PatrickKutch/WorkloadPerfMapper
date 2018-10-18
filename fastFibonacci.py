@@ -53,7 +53,7 @@ def GetCurrUS():
     return int(round(time.time() *1000000)) # Gives you float secs since epoch, so make it us and chop
 
 # --------------- Begin routines for the 'Service' workers ----------------------
-def calculateFibinacci(n):
+def calculateFibonacci(n):
    global cache
    if n == 1:
       return 1
@@ -62,7 +62,7 @@ def calculateFibinacci(n):
    elif None != cache[n]:
       return cache[n]        
    else:   
-      cache[n] = calculateFibinacci(n-1) + calculateFibinacci(n-2)                   
+      cache[n] = calculateFibonacci(n-1) + calculateFibonacci(n-2)                   
       return cache[n] 
 
 
@@ -75,20 +75,20 @@ class ResponseWrapper():
 class GenericService(myRPC.SampleServiceServicer):
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.fibinacciCounter = 0
+        self.fibonacciCounter = 0
 
     @REQUEST_TIME.time()
-    def PerformFibinacci(self, request, context):
+    def PerformFibonacci(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
-        response.ServiceName = "FIBINACCI"
+        response.ServiceName = "FibonaccI"
 
         requestParam = response.RequestParameter.add()
         requestParam.Key = 'size'
         requestParam.Value = str(request.number)
 
         if request.number < 0:
-            context.set_details("Fibinacci requires a postive value: {0} is illegal.".format(request.Type))
+            context.set_details("Fibonacci requires a postive value: {0} is illegal.".format(request.Type))
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             return response
             
@@ -96,9 +96,9 @@ class GenericService(myRPC.SampleServiceServicer):
         while len(cache) <= request.number:
           cache.append(None)
 
-        response.ResponseData = str(calculateFibinacci(request.number))
-        self.fibinacciCounter += 1
-        response.CalledCounter = self.fibinacciCounter
+        response.ResponseData = str(calculateFibonacci(request.number))
+        self.fibonacciCounter += 1
+        response.CalledCounter = self.fibonacciCounter
 
         response.ProcessingTime = GetCurrUS() - startTime
 

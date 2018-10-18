@@ -55,13 +55,13 @@ def GetCurrUS():
     return int(round(time.time() *1000000)) # Gives you float secs since epoch, so make it us and chop
 
 # --------------- Begin routines for the 'Service' workers ----------------------
-def calculateFibinacci(n):
+def calculateFibonacci(n):
     if n == 0:
         return 0
     elif n == 1:
         return 1
     else:
-        return calculateFibinacci(n-1) + calculateFibinacci(n-2)
+        return calculateFibonacci(n-1) + calculateFibonacci(n-2)
 
 def getServiceEndpoint(serviceName):
     if 'SERVICE_DISCOVERY_DIR' in os.environ.keys():
@@ -94,7 +94,7 @@ class GenericService(myRPC.SampleServiceServicer):
         self.hashCounter = 0
         self.noopCounter = 0
         self.etcdCounter = 0
-        self.fibinacciCounter = 0
+        self.fibonacciCounter = 0
 
     @REQUEST_TIME.time()
     def GenerateHash(self, request, context):
@@ -145,23 +145,23 @@ class GenericService(myRPC.SampleServiceServicer):
         return response
 
     @REQUEST_TIME.time()
-    def PerformFibinacci(self, request, context):
+    def PerformFibonacci(self, request, context):
         startTime = GetCurrUS()
         response = myMessages.ServiceResponse()
-        response.ServiceName = "FIBINACCI"
+        response.ServiceName = "FIBonacci"
 
         requestParam = response.RequestParameter.add()
         requestParam.Key = 'size'
         requestParam.Value = str(request.number)
 
         if request.number < 0:
-            context.set_details("Fibinacci requires a postive value: {0} is illegal.".format(request.Type))
+            context.set_details("Fibonacci requires a postive value: {0} is illegal.".format(request.Type))
             context.set_code(grpc.StatusCode.INVALID_ARGUMENT)
             return response
 
-        response.ResponseData = str(calculateFibinacci(request.number))
-        self.fibinacciCounter += 1
-        response.CalledCounter = self.fibinacciCounter
+        response.ResponseData = str(calculateFibonacci(request.number))
+        self.fibonacciCounter += 1
+        response.CalledCounter = self.fibonacciCounter
 
         response.ProcessingTime = GetCurrUS() - startTime
 
@@ -270,22 +270,22 @@ def handleNoOpRequest(requestMap):
         logger.info(str(response))
         return response
 
-def handleFibinacciRequest(requestMap):
+def handleFibonacciRequest(requestMap):
     logger = logging.getLogger(__name__)
-    logger.info("Processing fibinacci request")
+    logger.info("Processing fibonacci request")
     request = myMessages.FibanacciRequest()   
 
     if not 'size' in requestMap:
-        raise ValueError("Fibinacci size not specified")
+        raise ValueError("Fibonacci size not specified")
 
     try:
         request.number = int(requestMap['size'])
     except ValueError:
-        raise ValueError("Invalid Fibinacci size specified")
+        raise ValueError("Invalid Fibonacci size specified")
 
-    with grpc.insecure_channel(getServiceEndpoint("FIBINACCI_SERVICE_ENDPOINT")) as channel:
+    with grpc.insecure_channel(getServiceEndpoint("FIBONACCI_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
-        response = rpcStub.PerformFibinacci(request)
+        response = rpcStub.PerformFibonacci(request)
         logger.info(str(response))
         return response
 
@@ -342,8 +342,8 @@ def performServicesHandler():
             elif svcName == "NOOP":
                 response = handleNoOpRequest(service)
 
-            elif svcName == "FIBINACCI":
-                response = handleFibinacciRequest(service)
+            elif svcName == "FIBonacci":
+                response = handleFibonacciRequest(service)
 
             elif svcName == "ETCD":
                 response = handleEtcdRequest(service)

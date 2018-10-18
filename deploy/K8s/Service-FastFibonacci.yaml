@@ -1,7 +1,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: wpm-fibonacci-servicedistant-service
+  name: wpm-fast-fibonacci-servicedistant-service
   namespace: app-at-edge-ns
   labels:
     locale: appdistant
@@ -9,7 +9,7 @@ metadata:
   
 spec:
   selector:
-    wpm-pod: wpm-app-fibonacci
+    wpm-pod: wpm-app-fast-fibonacci
     locale: appdistant
     
   ports:
@@ -20,10 +20,10 @@ spec:
 apiVersion: v1
 kind: Pod
 metadata:
-  name: wpm-fibonacci-distant-pod
+  name: wpm-fast-fibonacci-distant-pod
   namespace: app-at-edge-ns 
   labels:
-    wpm-pod: wpm-app-fibonacci
+    wpm-pod: wpm-app-fast-fibonacci
     locale: appdistant
     
 spec:
@@ -38,8 +38,8 @@ spec:
             - distant-node
     
   containers:
-  - name: workload-mapper-service-fibonacci
-    image: patrickkutch/workloadmapper
+  - name: workload-mapper-service-fast-fibonacci
+    image: patrickkutch/fast-fibonacci
     imagePullPolicy: Always    
     args: ["-r", "service", "-c", "0.0.0.0:80"]          
     
