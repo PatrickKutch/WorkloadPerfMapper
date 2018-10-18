@@ -39,7 +39,7 @@ spec:
     
   containers:
   - name: workload-mapper-service-fast-fibonacci
-    image: patrickkutch/fast-fibonacci
+    image: patrickkutch/fastfibonacci
     imagePullPolicy: Always    
     args: ["-r", "service", "-c", "0.0.0.0:80"]          
     

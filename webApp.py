@@ -40,7 +40,7 @@ requestsReceived=0
 invalidRequests=0
 starttime = 0
 
-VersionStr="18.10.09 Build 1"
+VersionStr="18.10.18 Build 1"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)

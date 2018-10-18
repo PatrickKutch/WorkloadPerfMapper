@@ -30,7 +30,7 @@ from pprint import pprint as pprint
 import time
 
 ShowResponse = None
-VersionStr="18.10.17 Build 1"
+VersionStr="18.10.18 Build 1"
 args = None
 
 def GetCurrUS():
