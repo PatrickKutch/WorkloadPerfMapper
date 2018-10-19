@@ -40,7 +40,7 @@ requestsReceived=0
 invalidRequests=0
 starttime = 0
 
-VersionStr="18.10.19 Build 2"
+VersionStr="18.10.19 Build 3"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)
@@ -355,9 +355,9 @@ def performServicesHandler():
         response['Time.RTT'] = int(serviceResp.rpcTime) - (responseObj.ProcessingTime)
         response['Time.Processing'] = responseObj.ProcessingTime
         response['ResponseData'] = responseObj.ResponseData
-        response['RequestParemeters'] = []
+        response['RequestParameters'] = []
         for Param in responseObj.RequestParameter:
-            response['RequestParemeters'].append({Param.Key : Param.Value})
+            response['RequestParameters'].append({Param.Key : Param.Value})
 
         response['ProcessedCount'] = responseObj.CalledCounter
 
