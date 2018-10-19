@@ -30,7 +30,7 @@ from pprint import pprint as pprint
 import time
 
 ShowResponse = None
-VersionStr="18.10.18 Build 1"
+VersionStr="18.10.18 Build 2"
 args = None
 
 def GetCurrUS():
@@ -80,6 +80,7 @@ def PostData(where,what,detailLevel,mirrorFn):
 
     except Exception as Ex:
         logger = logging.getLogger(__name__)
+        logger.error("from remote:")
         logger.error(str(Ex))
         return
 
@@ -156,9 +157,6 @@ def main():
                         fibonacci[size=num]
                             where
                                 size = how high to calculate fibonacci tuple_iterator
-                        etcd[put=number,get=number]
-                            where
-                                number = number of those actions to perform with random data
                         noop[] - does nothing but return'''))
                                     
 

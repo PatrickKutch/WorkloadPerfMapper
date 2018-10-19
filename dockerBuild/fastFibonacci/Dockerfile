@@ -4,14 +4,13 @@ FROM python:3.6-slim
 ENV PYTHONUNBUFFERD=0
 
 RUN mkdir WorkloadPerfMan && \
-pip install grpcio-tools googleapis-common-protos flask prometheus_client 
-COPY *.proto *.py WorkloadPerfMan/
+pip install grpcio-tools googleapis-common-protos prometheus_client 
+
+COPY fastFibonacci.py rpcDefinitions_pb2.py rpcDefinitions_pb2_grpc.py *.proto WorkloadPerfMan/
 
 
 WORKDIR WorkloadPerfMan
 RUN python run_codegen.py
 
-# need the goodies for flask and Google RPC
-
-ENTRYPOINT  ["python", "webApp.py"]
+ENTRYPOINT  ["python", "fastFibonacci.py"]
 

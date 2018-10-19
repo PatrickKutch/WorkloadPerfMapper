@@ -25,9 +25,8 @@ package inteledgecloud;
 service SampleService
 {
     rpc GenerateHash(HashRequest) returns (ServiceResponse) {};
-    rpc PerformFibonacci(FibanacciRequest) returns (ServiceResponse) {};
+    rpc PerformFibonacci(FibonacciRequest) returns (ServiceResponse) {};
     rpc PerformNoOp(Empty) returns (ServiceResponse) {};
-    rpc PerformEtcd(EtcdRequest) returns (ServiceResponse) {};
 }
 
 message ServiceResponse
@@ -48,12 +47,6 @@ message HashRequest
 {
     string Type = 1;
     int32 InputLen = 2;
-}
-
-message EtcdRequest
-{
-    int32 putCount = 1;
-    int32 getCount = 2;
 }
 
 message Parameter

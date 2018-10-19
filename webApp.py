@@ -40,7 +40,7 @@ requestsReceived=0
 invalidRequests=0
 starttime = 0
 
-VersionStr="18.10.18 Build 1"
+VersionStr="18.10.19 Build 1"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)
@@ -93,7 +93,6 @@ class GenericService(myRPC.SampleServiceServicer):
         self.logger = logging.getLogger(__name__)
         self.hashCounter = 0
         self.noopCounter = 0
-        self.etcdCounter = 0
         self.fibonacciCounter = 0
 
     @REQUEST_TIME.time()
@@ -177,19 +176,6 @@ class GenericService(myRPC.SampleServiceServicer):
         response.CalledCounter = self.noopCounter
 
         return response
-        
-    @REQUEST_TIME.time()
-    def PerformEtcd(self, request, context):
-        startTime = GetCurrUS()
-        response = myMessages.ServiceResponse()
-        response.ServiceName = "ETCD"
-
-        response.ProcessingTime = GetCurrUS() - startTime
-        response.ResponseData = "etcd"
-        self.etcdCounter += 1
-        response.CalledCounter = self.etcdCounter
-
-        return response
 
 def runAsService(hostAddr,hostPort):
     logger = logging.getLogger(__name__)
@@ -256,18 +242,18 @@ def handleHashRequest(requestMap):
     with grpc.insecure_channel(getServiceEndpoint("HASH_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.GenerateHash(request)
-        logger.info(str(response))
+        logger.debug(str(response))
         return response
 
 def handleNoOpRequest(requestMap):
     logger = logging.getLogger(__name__)
-    logger.info("Processing NOOP request, endpoint: " + getServiceEndpoint("NOOP_SERVICE_ENDPOINT"))
+    logger.info("Processing NOOP request")
     request = myMessages.Empty()   
 
     with grpc.insecure_channel(getServiceEndpoint("NOOP_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.PerformNoOp(request)
-        logger.info(str(response))
+        logger.debug(str(response))
         return response
 
 def handleFibonacciRequest(requestMap):
@@ -286,21 +272,9 @@ def handleFibonacciRequest(requestMap):
     with grpc.insecure_channel(getServiceEndpoint("FIBONACCI_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.PerformFibonacci(request)
-        logger.info(str(response))
+        logger.debug(str(response))
         return response
 
-def handleEtcdRequest(requestMap):
-    logger = logging.getLogger(__name__)
-    logger.info("Processing etcd request")
-    request = myMessages.EtcdRequest()   
-    request.putCount= requestMap['put']
-    request.getCount= requestMap['get']
-
-    with grpc.insecure_channel(getServiceEndpoint("ETCD_SERVICE_ENDPOINT")) as channel:
-        rpcStub = myRPC.SampleServiceStub(channel)
-        response = rpcStub.PerformEtcd(request)
-        logger.info(str(response))
-        return response
     
 @app.route('/performServices',methods = ['POST'])
 def performServicesHandler():
@@ -328,7 +302,9 @@ def performServicesHandler():
         requeststartTime = content['start-timestamp']
 
     responseList=[]
+    logger.debug(content['Services'])
     for service in content['Services']:
+        logger.debug(service)
         try:
             svcName = "Malformed request - Service not found in map"
 
@@ -344,9 +320,6 @@ def performServicesHandler():
 
             elif svcName == "FIBONACCI":
                 response = handleFibonacciRequest(service)
-
-            elif svcName == "ETCD":
-                response = handleEtcdRequest(service)
 
             else:
                 invalidRequests += 1
