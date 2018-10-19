@@ -40,7 +40,7 @@ requestsReceived=0
 invalidRequests=0
 starttime = 0
 
-VersionStr="18.10.19 Build 1"
+VersionStr="18.10.19 Build 2"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)
@@ -296,13 +296,12 @@ def performServicesHandler():
 
     if not 'Services' in content:
         invalidRequests += 1
-        return 'Invalid JSON posted'
+        return json.dumps({"Error" : "No Services Requested" })
 
     if 'start-timestamp' in content:
         requeststartTime = content['start-timestamp']
 
     responseList=[]
-    logger.debug(content['Services'])
     for service in content['Services']:
         logger.debug(service)
         try:
@@ -323,7 +322,7 @@ def performServicesHandler():
 
             else:
                 invalidRequests += 1
-                return 'Invalid JSON posted'
+                return json.dumps({"Error" : "Invalid request: {0}".format(svcName) })
 
             # gRPC object is immutable, so throw in a wrapper along with how long RPC call took
             wrapper = ResponseWrapper(GetCurrUS() - startServiceTimestamp,response)
