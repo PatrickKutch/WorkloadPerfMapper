@@ -37,7 +37,7 @@ requestsReceived=0
 invalidRequests=0
 starttime = 0
 
-VersionStr="18.10.15 Build 1"
+VersionStr="18.10.23 Build 1"
 
 cache=[]
 cache.append(0)
@@ -106,7 +106,7 @@ class GenericService(myRPC.SampleServiceServicer):
 
 def runAsService(hostAddr,hostPort):
     logger = logging.getLogger(__name__)
-    print("Launching as service at {0}:{1}. Version: {2}".format(hostAddr,hostPort,VersionStr))
+    print("Launching FastFibonacci  service at {0}:{1}. Version: {2}".format(hostAddr,hostPort,VersionStr))
 
     try:
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

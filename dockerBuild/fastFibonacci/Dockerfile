@@ -6,7 +6,7 @@ ENV PYTHONUNBUFFERD=0
 RUN mkdir WorkloadPerfMan && \
 pip install grpcio-tools googleapis-common-protos prometheus_client 
 
-COPY fastFibonacci.py rpcDefinitions_pb2.py rpcDefinitions_pb2_grpc.py *.proto WorkloadPerfMan/
+COPY fastFibonacci.py run_codegen.py *.proto WorkloadPerfMan/
 
 
 WORKDIR WorkloadPerfMan
