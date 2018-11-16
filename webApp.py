@@ -23,6 +23,7 @@ import grpc
 from concurrent import futures
 from flask import Flask
 from flask import request
+from flask import Response
 import sys
 import time
 import rpcDefinitions_pb2 as myMessages # Simplified usage
@@ -39,8 +40,11 @@ processedCount=0
 requestsReceived=0
 invalidRequests=0
 starttime = 0
+cached_Endpoints={}
+last_cache_update=0
+cache_update_freqency=60
 
-VersionStr="18.10.19 Build 3"
+VersionStr="18.11.16 Build 3"
 
 # for Flask object when this is run as the web application
 app = Flask(__name__)
@@ -64,6 +68,9 @@ def calculateFibonacci(n):
         return calculateFibonacci(n-1) + calculateFibonacci(n-2)
 
 def getServiceEndpoint(serviceName):
+    global cached_Endpoints
+    if serviceName in cached_Endpoints:
+        return cached_Endpoints[serviceName]
     if 'SERVICE_DISCOVERY_DIR' in os.environ.keys():
         fName = os.environ['SERVICE_DISCOVERY_DIR'] + serviceName
         logger = logging.getLogger(__name__)
@@ -72,6 +79,9 @@ def getServiceEndpoint(serviceName):
             with open(fName, "rt") as inpFile:
                 endpoint = inpFile.read().strip()
                 logger.debug("Service: {0} is at {1}".format(serviceName,endpoint))
+                ## optionally cached endpoint to save time
+                if cache_update_freqency > 0:
+                   cached_Endpoints[serviceName] = endpoint
                 return endpoint
                 
         except FileNotFoundError:
@@ -242,7 +252,7 @@ def handleHashRequest(requestMap):
     with grpc.insecure_channel(getServiceEndpoint("HASH_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.GenerateHash(request)
-        logger.debug(str(response))
+#        logger.debug(str(response))
         return response
 
 def handleNoOpRequest(requestMap):
@@ -253,7 +263,7 @@ def handleNoOpRequest(requestMap):
     with grpc.insecure_channel(getServiceEndpoint("NOOP_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.PerformNoOp(request)
-        logger.debug(str(response))
+#        logger.debug(str(response))
         return response
 
 def handleFibonacciRequest(requestMap):
@@ -272,17 +282,22 @@ def handleFibonacciRequest(requestMap):
     with grpc.insecure_channel(getServiceEndpoint("FIBONACCI_SERVICE_ENDPOINT")) as channel:
         rpcStub = myRPC.SampleServiceStub(channel)
         response = rpcStub.PerformFibonacci(request)
-        logger.debug(str(response))
+#        logger.debug(str(response))
         return response
 
     
 @app.route('/performServices',methods = ['POST'])
 def performServicesHandler():
-    global invalidRequests,requestsReceived,processedCount
+    global invalidRequests,requestsReceived,processedCount,last_cache_update,cache_update_freqency
     logger = logging.getLogger(__name__)
 
     startTimestamp = GetCurrUS()
     requestsReceived += 1
+ 
+    if cache_update_freqency > 0:
+        if startTimestamp/1000 - last_cache_update > cache_update_freqency:
+           cached_Endpoints = {}
+           last_cache_update = startTimestamp/1000
 
     if not request.is_json:
         invalidRequests += 1
@@ -303,7 +318,6 @@ def performServicesHandler():
 
     responseList=[]
     for service in content['Services']:
-        logger.debug(service)
         try:
             svcName = "Malformed request - Service not found in map"
 
@@ -391,6 +405,12 @@ def statistics():
 
     return "Runtime: {0} request received: {1} invalid requests: {2}".format(strTime,requestsReceived,invalidRequests)
 
+@app.route("/healthz")
+def health_check():
+   return Response("Healthy", status=200, mimetype='text/http')
+	 
+	 
+
 # --------------- end routines for the 'web app' ----------------------
 
 
@@ -402,6 +422,7 @@ def main():
     parser.add_argument("-r","--role",help="app | service",type=str,required=True)
     parser.add_argument("-v","--verbose",help="prints information, values 0-3",type=int)
     parser.add_argument("-c","--connect",help="ip:port to listen on.",type=str,required=True)
+    parser.add_argument("-f","--fastlookup",help="cached dns lookups for performance improvement, value is freqency in seconds to update, default (0) is to not use",type=int,default=0)
 
     try:
         args = parser.parse_args()
@@ -424,6 +445,8 @@ def main():
 
     else:
         _VerboseLevel = logging.ERROR
+
+    cache_update_freqency = args.fastlookup
 
     logging.basicConfig(level=_VerboseLevel,format='%(asctime)s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M')
     logger = logging.getLogger(__name__)

@@ -41,6 +41,13 @@ spec:
     image: patrickkutch/workloadmapper
     imagePullPolicy: Always    
     args: ["-v", "3","-r", "app", "-c", "0.0.0.0:80"]          
+
+    livenessProbe:
+      httpGet:
+        path: /healthz
+        port: 80
+      initialDelaySeconds: 3
+      periodSeconds: 3
     
     env:
     - name: PYTHONUNBUFFERED

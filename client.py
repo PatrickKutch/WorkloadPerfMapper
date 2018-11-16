@@ -34,7 +34,11 @@ VersionStr="18.10.19 Build 1"
 args = None
 
 def GetCurrUS():
-    return int(round(time.time() *1000000)) # Gives you float secs since epoch, so make it us and chop
+    return int(round(time.time() * 1000000.0)) # Gives you float secs since epoch, so make it us and chop
+
+def GetCurrMS():
+    return int(round(time.time() * 1000.0)) # Gives you float secs since epoch, so make it us and chop
+
 
 def ShowResponseJSON(responseData):
     print(json.dumps(responseData,indent=4, sort_keys=True))
@@ -122,13 +126,14 @@ def PostData(where,what,detailLevel,mirrorFn):
         if detailLevel < 1:
             overallDataMap={}
             respData={}
-
         respData["client"] = clientInfo 
 
         overallDataMap.pop('client-start-timestamp',None)
         
+        pprint(respData)
         # Go and create a ms entry from the us data
-        for service in respData['Service']:
+        if 'Service' in respData:
+          for service in respData['Service']:
             svcMap = respData['Service'][service]
             respData['Service'][service]['Time.Processing.ms'] = "{0:.2f}".format(int(respData['Service'][service]['Time.Processing'])/1000)
             respData['Service'][service]['Time.RPC.ms'] = "{0:.2f}".format(int(respData['Service'][service]['Time.RPC'])/1000)
@@ -161,7 +166,7 @@ def main():
                                     
 
     parser.add_argument("-s", "--server",help="where to connect to", type=str, required=True)
-    parser.add_argument("-v", "--verbose",help="prints information, values 0-3",type=int)
+    parser.add_argument("-v", "--verbose",help="prints information, values 0-3",type=int,default=0)
     parser.add_argument("-t", "--multithread", help="number of threads to run",type=int,default=1)
     parser.add_argument("-c", "--count", help="number of times to send the request per thread", type=int,default=1)
     parser.add_argument("-m", "--mirror",help='specifies mirror target ip and port to send a copy of the incoming packets to',type=str)
@@ -258,7 +263,7 @@ def main():
 
     with futures.ThreadPoolExecutor(max_workers=10) as executor:
         for loop in range(1,args.multithread-1):
-            retData = executor.submit(PostRestMessage,args.server,dataPktRaw,-1,args.count)
+            retData = executor.submit(PostRestMessage,args.server,dataPktRaw,-1,args.count,None)
             
         if None != args.mirrorSocket:
              sendFn = MirrorToMinion
